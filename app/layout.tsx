@@ -27,7 +27,7 @@ export const metadata: Metadata = {
       "Your premium marketplace for executors, scripts, and digital tools. Join thousands of satisfied customers worldwide.",
     images: [
       {
-        url: "/images/key-empire-banner.png",
+        url: "https://key-empire.com/images/key-empire-banner.png",
         width: 1200,
         height: 630,
         alt: "Key-Empire - Premium Marketplace",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     title: "Key-Empire!",
     description:
       "Your premium marketplace for executors, scripts, and digital tools. Join thousands of satisfied customers worldwide.",
-    images: ["/images/key-empire-banner.png"],
+    images: ["https://key-empire.com/images/key-empire-banner.png"],
   },
 
   // Additional meta tags
@@ -59,7 +59,8 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-    generator: 'v0.dev'
+
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
@@ -70,7 +71,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-
         <style>{`
 html {
   font-family: ${GeistSans.style.fontFamily};
