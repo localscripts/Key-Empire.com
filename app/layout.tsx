@@ -70,39 +70,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        {/* Theme color meta tags */}
-        <meta name="theme-color" content="#80E26F" />
-        <meta name="msapplication-TileColor" content="#80E26F" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-
-        {/* Discord-specific meta tags - Single image reference */}
-        <meta property="og:site_name" content="Key-Empire" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Key-Empire!" />
-        <meta
-          property="og:description"
-          content="Your premium marketplace for executors, scripts, and digital tools. Join thousands of satisfied customers worldwide."
-        />
-        <meta property="og:image" content="/images/key-empire-banner.png" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="Key-Empire - Premium Marketplace" />
-        <meta property="og:url" content="https://key-empire.com" />
-
-        {/* Twitter Card meta tags - Single image reference */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@KeyEmpire" />
-        <meta name="twitter:creator" content="@KeyEmpire" />
-        <meta name="twitter:title" content="Key-Empire!" />
-        <meta
-          name="twitter:description"
-          content="Your premium marketplace for executors, scripts, and digital tools. Join thousands of satisfied customers worldwide."
-        />
-        <meta name="twitter:image" content="/images/key-empire-banner.png" />
-
-        {/* Favicon */}
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/images/key-empire-banner.png" />
 
         <style>{`
 html {
