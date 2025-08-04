@@ -27,22 +27,22 @@ export default function GetStartedModal({ isOpen, onClose }: GetStartedModalProp
     {
       name: "Roblox",
       icon: "/images/Roblox.png",
-      redirectUrl: "/selections",
+      redirectUrl: "/roblox",
     },
     {
-      name: "Counter-Strike 2",
-      icon: "/images/CS2.png",
-      redirectUrl: "/selections",
+      name: "soon...",
+      icon: "/images/question-icon.png",
+      redirectUrl: "",
     },
     {
-      name: "Fortnite",
-      icon: "/images/fortnite-logo.png",
-      redirectUrl: "/selections",
+      name: "soon...",
+      icon: "/images/question-icon.png",
+      redirectUrl: "/",
     },
     {
-      name: "Rust",
-      icon: "/images/rust-logo.png",
-      redirectUrl: "/selections",
+      name: "soon...",
+      icon: "/images/question-icon.png",
+      redirectUrl: "/",
     },
   ])
 
