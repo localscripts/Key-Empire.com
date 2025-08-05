@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Cookies from "js-cookie"
 
-export default function FortniteAffiliatePage() {
+export default function CounterStrike2AffiliatePage() {
   const params = useParams()
   const router = useRouter()
   const affiliateCode = params.affiliateCode as string
@@ -12,13 +12,21 @@ export default function FortniteAffiliatePage() {
   useEffect(() => {
     if (affiliateCode) {
       Cookies.set("affiliate_code", affiliateCode, { expires: 30, path: "/" })
-      router.replace("/fortnite") // Redirect to the Fortnite product page
+      router.replace("/counterstrike2")
     }
   }, [affiliateCode, router])
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white dark:bg-white dark:text-gray-900">
-      <p>Redirecting to Fortnite page...</p>
+      <p>Redirecting to Counter-Strike 2 page...</p>
     </div>
   )
+}
+
+export async function generateStaticParams() {
+  const affiliateCodes = ["majster"]
+
+  return affiliateCodes.map(code => ({
+    affiliateCode: code,
+  }))
 }
