@@ -7,11 +7,13 @@ import { useState, useEffect } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import ReportModal from "./components/report-modal"
+// ReportModal is no longer needed, so it's removed from here
+// import ReportModal from "./components/report-modal"
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const [showReportModal, setShowReportModal] = useState(false)
+  // showReportModal state is no longer needed
+  // const [showReportModal, setShowReportModal] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(true) // Initialize to true for default dark mode
 
@@ -115,20 +117,22 @@ export default function Navbar() {
                   <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
                 </Button>
               </Link>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowReportModal(true)}
-                className={`select-none relative overflow-hidden group transform hover:scale-105 transition-all duration-300 hover:shadow-lg border-2 text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400 ${
-                  isScrolled
-                    ? "bg-white/80 backdrop-blur-sm border-gray-300/60 hover:bg-red-50 hover:border-red-300 dark:bg-gray-800/80 dark:border-gray-600/60 dark:hover:bg-red-900/20 dark:hover:border-red-400"
-                    : "bg-white/90 border-gray-300 hover:bg-red-50 hover:border-red-300 dark:bg-gray-800/90 dark:border-gray-600 dark:hover:bg-red-900/20 dark:hover:border-red-400"
-                }`}
-              >
-                <span className="absolute inset-0 bg-gradient-to-r from-red-400 to-red-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-                <Flag className="h-4 w-4 select-none relative z-10" />
-                <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
-              </Button>
+              {/* Changed Report Button to redirect to /discord */}
+              <Link href="/discord">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`select-none relative overflow-hidden group transform hover:scale-105 transition-all duration-300 hover:shadow-lg border-2 text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400 ${
+                    isScrolled
+                      ? "bg-white/80 backdrop-blur-sm border-gray-300/60 hover:bg-red-50 hover:border-red-300 dark:bg-gray-800/80 dark:border-gray-600/60 dark:hover:bg-red-900/20 dark:hover:border-red-400"
+                      : "bg-white/90 border-gray-300 hover:bg-red-50 hover:border-red-300 dark:bg-gray-800/90 dark:border-gray-600 dark:hover:bg-red-900/20 dark:hover:border-red-400"
+                  }`}
+                >
+                  <span className="absolute inset-0 bg-gradient-to-r from-red-400 to-red-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+                  <Flag className="h-4 w-4 select-none relative z-10" />
+                  <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
+                </Button>
+              </Link>
               <Link href="/discord">
                 <Button
                   size="sm"
@@ -197,19 +201,17 @@ export default function Navbar() {
                     <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
                   </Link>
 
-                  {/* Report Button */}
-                  <button
-                    onClick={() => {
-                      setShowReportModal(true)
-                      setIsOpen(false)
-                    }}
+                  {/* Changed Report Button to redirect to /discord */}
+                  <Link
+                    href="/discord"
+                    onClick={() => setIsOpen(false)}
                     className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 border-gray-300 text-gray-800 transition-colors hover:bg-red-50 hover:border-red-300 hover:text-red-600 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-red-900/20 dark:hover:border-red-400 dark:hover:text-red-400 select-none relative overflow-hidden group transform hover:scale-105 duration-300 hover:shadow-lg w-full text-left"
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-red-400 to-red-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                     <Flag className="h-5 w-5 select-none relative z-10" />
                     <span className="font-medium relative z-10">Report Issue</span>
                     <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
-                  </button>
+                  </Link>
 
                   {/* Start Earning Button */}
                   <Link href="/selections">
@@ -281,8 +283,8 @@ export default function Navbar() {
   `}</style>
       </nav>
 
-      {/* Report Modal */}
-      <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} />
+      {/* ReportModal is no longer rendered here */}
+      {/* <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} /> */}
     </>
   )
 }
