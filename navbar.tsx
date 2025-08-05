@@ -50,7 +50,7 @@ export default function Navbar() {
               <Link href="/" className="flex items-center group">
                 <div className="relative rounded-lg">
                   <Image
-                    src="/placeholder.svg?height=40&width=160"
+                    src="/images/key-empire-logo.png" // Reverted to original path
                     alt="Key-Empire"
                     width={160}
                     height={40}
@@ -98,7 +98,7 @@ export default function Navbar() {
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                   <Image
-                    src="/placeholder.svg?height=16&width=16"
+                    src="/images/discord-icon.svg" // Reverted to original path
                     alt="Discord"
                     width={16}
                     height={16}
@@ -180,7 +180,7 @@ export default function Navbar() {
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                     <Image
-                      src="/placeholder.svg?height=20&width=20"
+                      src="/images/discord-icon.svg" // Reverted to original path
                       alt="Discord"
                       width={20}
                       height={20}
