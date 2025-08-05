@@ -137,6 +137,36 @@ const initialSelections = [
     shadeColor: "pink",
     popular: true,
   },
+    {
+    id: 9,
+    title: "Seliware",
+    image: "/images/seliware.png",
+    redirectUrl: "/phantom-suite",
+    price: "$11.99", // Initial static price
+    resellers: "99+", // Initial static resellers
+    shadeColor: "purple",
+    popular: true,
+  },
+  {
+    id: 10,
+    title: "Valex",
+    image: "/images/valex.png",
+    redirectUrl: "/cipher-vault",
+    price: "$6.99", // Initial static price
+    resellers: "99+", // Initial static resellers
+    shadeColor: "cyan",
+    popular: false,
+  },
+  {
+    id: 11,
+    title: "Assembly",
+    image: "/images/assembly.png",
+    redirectUrl: "/elite-package",
+    price: "$8.99", // Initial static price
+    resellers: "67", // Initial static resellers
+    shadeColor: "orange",
+    popular: false,
+  },
 ]
 
 // Function to parse price string to a number for sorting
