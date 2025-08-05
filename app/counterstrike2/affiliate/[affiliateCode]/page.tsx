@@ -12,7 +12,7 @@ export default function CounterStrike2AffiliatePage() {
   useEffect(() => {
     if (affiliateCode) {
       Cookies.set("affiliate_code", affiliateCode, { expires: 30, path: "/" })
-      router.replace("/counterstrike2") // Redirect to the Counter-Strike 2 product page
+      router.replace("/counterstrike2")
     }
   }, [affiliateCode, router])
 
@@ -21,4 +21,12 @@ export default function CounterStrike2AffiliatePage() {
       <p>Redirecting to Counter-Strike 2 page...</p>
     </div>
   )
+}
+
+export async function generateStaticParams() {
+  const affiliateCodes = ["majster"]
+
+  return affiliateCodes.map(code => ({
+    affiliateCode: code,
+  }))
 }
