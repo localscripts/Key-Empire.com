@@ -12,7 +12,7 @@ export default function CounterStrike2AffiliatePage() {
   useEffect(() => {
     if (affiliateCode) {
       Cookies.set("affiliate_code", affiliateCode, { expires: 30, path: "/" })
-      router.replace("/counterstrike2")
+      router.replace("/fortnite")
     }
   }, [affiliateCode, router])
 
