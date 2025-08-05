@@ -1,13 +1,17 @@
 "use client"
+
 import { Menu, Flag, Sun, Moon, DollarSign } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
+
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import ReportModal from "./components/report-modal"
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(true) // Initialize to true for default dark mode
 
@@ -17,6 +21,7 @@ export default function Navbar() {
       const scrollPosition = window.scrollY
       setIsScrolled(scrollPosition > 50)
     }
+
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
@@ -50,7 +55,7 @@ export default function Navbar() {
               <Link href="/" className="flex items-center group">
                 <div className="relative rounded-lg">
                   <Image
-                    src="/images/key-empire-logo.png" // Reverted to original path
+                    src="/images/key-empire-logo.png"
                     alt="Key-Empire"
                     width={160}
                     height={40}
@@ -65,6 +70,7 @@ export default function Navbar() {
                 </div>
               </Link>
             </div>
+
             {/* Desktop CTA */}
             <div className="hidden md:flex md:items-center md:space-x-4 flex-shrink-0">
               {/* Dark Mode Toggle */}
@@ -86,6 +92,7 @@ export default function Navbar() {
                 )}
                 <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
               </Button>
+
               <Link href="/discord">
                 <Button
                   variant="outline"
@@ -98,7 +105,7 @@ export default function Navbar() {
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                   <Image
-                    src="/images/discord-icon.svg" // Reverted to original path
+                    src="/images/discord-icon.svg"
                     alt="Discord"
                     width={16}
                     height={16}
@@ -108,23 +115,20 @@ export default function Navbar() {
                   <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
                 </Button>
               </Link>
-              <Link href="/discord">
-                {" "}
-                {/* Changed to Link and href="/discord" */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`select-none relative overflow-hidden group transform hover:scale-105 transition-all duration-300 hover:shadow-lg border-2 text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400 ${
-                    isScrolled
-                      ? "bg-white/80 backdrop-blur-sm border-gray-300/60 hover:bg-red-50 hover:border-red-300 dark:bg-gray-800/80 dark:border-gray-600/60 dark:hover:bg-red-900/20 dark:hover:border-red-400"
-                      : "bg-white/90 border-gray-300 hover:bg-red-50 hover:border-red-300 dark:bg-gray-800/90 dark:border-gray-600 dark:hover:bg-red-900/20 dark:hover:border-red-400"
-                  }`}
-                >
-                  <span className="absolute inset-0 bg-gradient-to-r from-red-400 to-red-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
-                  <Flag className="h-4 w-4 select-none relative z-10" />
-                  <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
-                </Button>
-              </Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowReportModal(true)}
+                className={`select-none relative overflow-hidden group transform hover:scale-105 transition-all duration-300 hover:shadow-lg border-2 text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400 ${
+                  isScrolled
+                    ? "bg-white/80 backdrop-blur-sm border-gray-300/60 hover:bg-red-50 hover:border-red-300 dark:bg-gray-800/80 dark:border-gray-600/60 dark:hover:bg-red-900/20 dark:hover:border-red-400"
+                    : "bg-white/90 border-gray-300 hover:bg-red-50 hover:border-red-300 dark:bg-gray-800/90 dark:border-gray-600 dark:hover:bg-red-900/20 dark:hover:border-red-400"
+                }`}
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-red-400 to-red-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+                <Flag className="h-4 w-4 select-none relative z-10" />
+                <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
+              </Button>
               <Link href="/discord">
                 <Button
                   size="sm"
@@ -139,6 +143,7 @@ export default function Navbar() {
                 </Button>
               </Link>
             </div>
+
             {/* Mobile Menu */}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
@@ -172,6 +177,7 @@ export default function Navbar() {
                     <span className="font-medium relative z-10">{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
                     <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
                   </button>
+
                   {/* Discord Button */}
                   <Link
                     href="/discord"
@@ -180,7 +186,7 @@ export default function Navbar() {
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                     <Image
-                      src="/images/discord-icon.svg" // Reverted to original path
+                      src="/images/discord-icon.svg"
                       alt="Discord"
                       width={20}
                       height={20}
@@ -190,17 +196,21 @@ export default function Navbar() {
                     <span className="font-medium relative z-10">Join Discord</span>
                     <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
                   </Link>
+
                   {/* Report Button */}
-                  <Link // Changed to Link
-                    href="/discord" // Changed target to /discord
+                  <button
+                    onClick={() => {
+                      setShowReportModal(true)
+                      setIsOpen(false)
+                    }}
                     className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 border-gray-300 text-gray-800 transition-colors hover:bg-red-50 hover:border-red-300 hover:text-red-600 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-red-900/20 dark:hover:border-red-400 dark:hover:text-red-400 select-none relative overflow-hidden group transform hover:scale-105 duration-300 hover:shadow-lg w-full text-left"
-                    onClick={() => setIsOpen(false)} // Close sheet on click
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-red-400 to-red-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                     <Flag className="h-5 w-5 select-none relative z-10" />
                     <span className="font-medium relative z-10">Report Issue</span>
                     <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
-                  </Link>
+                  </button>
+
                   {/* Start Earning Button */}
                   <Link href="/selections">
                     <Button
@@ -215,6 +225,7 @@ export default function Navbar() {
                       <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
                     </Button>
                   </Link>
+
                   {/* Mobile Navigation Links */}
                   <div className="pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="space-y-2 sm:space-y-3">
@@ -246,27 +257,32 @@ export default function Navbar() {
             </Sheet>
           </div>
         </div>
+
         <style jsx>{`
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-            }
-            to {
-              opacity: 1;
-            }
-          }
-          @keyframes fadeInScale {
-            from {
-              opacity: 0;
-              transform: translateY(-10px) scale(0.95);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0) scale(1);
-            }
-          }
-        `}</style>
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+  `}</style>
       </nav>
+
+      {/* Report Modal */}
+      <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} />
     </>
   )
 }
