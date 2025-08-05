@@ -17,6 +17,9 @@ export async function generateStaticParams() {
     "macsploit",
     "ronin",
     "arceusx",
+    "seliware",
+    "valex",
+    "assembly",
   ]
 
   return productTitles.map((productTitle) => ({
@@ -48,4 +51,5 @@ export async function GET(request: NextRequest, { params }: { params: { productT
       headers: { "Content-Type": "application/json" },
     })
   }
+
 }
