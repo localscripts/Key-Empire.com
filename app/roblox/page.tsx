@@ -167,6 +167,76 @@ const initialSelections = [
     shadeColor: "orange",
     popular: false,
   },
+    {
+    id: 11,
+    title: "Serotonin",
+    image: "/images/serotonin.png",
+    redirectUrl: "/elite-package",
+    price: "$8.99", // Initial static price
+    resellers: "67", // Initial static resellers
+    shadeColor: "orange",
+    popular: false,
+  },
+    {
+    id: 10,
+    title: "Matcha",
+    image: "/images/matcha.png",
+    redirectUrl: "/cipher-vault",
+    price: "$6.99", // Initial static price
+    resellers: "99+", // Initial static resellers
+    shadeColor: "cyan",
+    popular: false,
+  },
+  {
+    id: 11,
+    title: "Aureus",
+    image: "/images/aureus.png",
+    redirectUrl: "/elite-package",
+    price: "$8.99", // Initial static price
+    resellers: "67", // Initial static resellers
+    shadeColor: "orange",
+    popular: false,
+  },
+      {
+    id: 10,
+    title: "Potassium",
+    image: "/images/potassium.png",
+    redirectUrl: "/cipher-vault",
+    price: "$6.99", // Initial static price
+    resellers: "99+", // Initial static resellers
+    shadeColor: "cyan",
+    popular: false,
+  },
+  {
+    id: 11,
+    title: "CodeX",
+    image: "/images/codex.png",
+    redirectUrl: "/elite-package",
+    price: "$8.99", // Initial static price
+    resellers: "67", // Initial static resellers
+    shadeColor: "orange",
+    popular: false,
+  },
+    {
+    id: 11,
+    title: "Volcano",
+    image: "/images/volcano.png",
+    redirectUrl: "/elite-package",
+    price: "$8.99", // Initial static price
+    resellers: "67", // Initial static resellers
+    shadeColor: "orange",
+    popular: false,
+  },
+    {
+    id: 11,
+    title: "Isabelle",
+    image: "/images/isabelle.png",
+    redirectUrl: "/elite-package",
+    price: "$8.99", // Initial static price
+    resellers: "67", // Initial static resellers
+    shadeColor: "orange",
+    popular: false,
+  },
 ]
 
 // Function to parse price string to a number for sorting

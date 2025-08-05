@@ -20,6 +20,13 @@ export async function generateStaticParams() {
     "seliware",
     "valex",
     "assembly",
+    "potassium",
+    "volcano",
+    "codex",
+    "matcha",
+    "serotonin",
+    "aureus",
+    "isabelle",
   ]
 
   return productTitles.map((productTitle) => ({
