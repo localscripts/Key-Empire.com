@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     const externalData = await externalResponse.json()
     return NextResponse.json(externalData)
   } catch (error: any) {
-    console.error("Error in /api/report route:", error)
+    console.error("Error in /report route:", error)
     return new NextResponse(JSON.stringify({ error: "Internal Server Error", details: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
