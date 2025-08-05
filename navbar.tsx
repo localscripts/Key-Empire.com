@@ -108,9 +108,9 @@ export default function Navbar() {
                   <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
                 </Button>
               </Link>
-              <Link href="/key-empire/discord">
+              <Link href="/discord">
                 {" "}
-                {/* Changed to Link and target */}
+                {/* Changed to Link and href="/discord" */}
                 <Button
                   variant="outline"
                   size="sm"
@@ -192,7 +192,7 @@ export default function Navbar() {
                   </Link>
                   {/* Report Button */}
                   <Link // Changed to Link
-                    href="/key-empire/discord" // Changed target
+                    href="/discord" // Changed target to /discord
                     className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 border-gray-300 text-gray-800 transition-colors hover:bg-red-50 hover:border-red-300 hover:text-red-600 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-red-900/20 dark:hover:border-red-400 dark:hover:text-red-400 select-none relative overflow-hidden group transform hover:scale-105 duration-300 hover:shadow-lg w-full text-left"
                     onClick={() => setIsOpen(false)} // Close sheet on click
                   >
