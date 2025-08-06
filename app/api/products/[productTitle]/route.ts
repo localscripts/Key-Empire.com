@@ -1,3 +1,4 @@
+
 import { type NextRequest, NextResponse } from "next/server"
 
 // Generate static params for all possible product titles
