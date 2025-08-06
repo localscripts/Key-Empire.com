@@ -8,12 +8,12 @@ import AnimatedBackground from "../../components/animated-background"
 import SelectionsHeroSection from "../../components/selections-hero-section"
 import QuickSelectionsGrid from "../../components/quick-selections-grid"
 import ProductsGrid from "../../components/products-grid"
-import CrypticModal from "../../components/cryptic-modal"
-import { PAYMENT_METHODS } from "../../lib/payment-methods"
+import CrypticModal from "../../components/cryptic-modal" // Import CrypticModal
+import { PAYMENT_METHODS } from "../../lib/payment-methods" // Import PAYMENT_METHODS - REMOVED .tsx EXTENSION
 import Image from "next/image"
-import GetStartedModal from "../../components/get-started-modal"
+import GetStartedModal from "../../components/get-started-modal" // Import GetStartedModal
 
-// Type definitions for API response
+// New type definitions for API response
 interface DurationPricing {
   price: string
   url: string
@@ -25,8 +25,8 @@ interface ApiResellerEntry {
     [key: string]: DurationPricing
   }
   premium?: boolean
-  pfp?: string
-  verified?: boolean
+  pfp?: string // Added pfp for profile picture URL
+  verified?: boolean // Added verified flag
 }
 
 interface ApiProductResellersResponse {
@@ -38,12 +38,12 @@ interface ResellerData {
   name: string
   payments: string[]
   durations: {
-    [key: string]: DurationPricing
+    [key: string]: DurationPricing // Make this dynamic
   }
   lowestPrice: number
   isPremium: boolean
-  pfpUrl: string
-  isVerified: boolean
+  pfpUrl: string // Added pfpUrl
+  isVerified: boolean // Added isVerified
 }
 
 const initialSelections = [
@@ -52,8 +52,8 @@ const initialSelections = [
     title: "Zenith",
     image: "/images/zenith.png",
     redirectUrl: "/phantom-suite",
-    price: "$11.99",
-    resellers: "99+",
+    price: "$11.99", // Initial static price
+    resellers: "99+", // Initial static resellers
     shadeColor: "purple",
     popular: true,
   },
@@ -62,8 +62,8 @@ const initialSelections = [
     title: "Wave",
     image: "/images/wave.png",
     redirectUrl: "/cipher-vault",
-    price: "$6.99",
-    resellers: "99+",
+    price: "$6.99", // Initial static price
+    resellers: "99+", // Initial static resellers
     shadeColor: "cyan",
     popular: false,
   },
@@ -72,18 +72,18 @@ const initialSelections = [
     title: "Bunni",
     image: "/images/bunni.png",
     redirectUrl: "/elite-package",
-    price: "$8.99",
-    resellers: "67",
+    price: "$8.99", // Initial static price
+    resellers: "67", // Initial static resellers
     shadeColor: "orange",
     popular: false,
   },
   {
-    id: 13,
+    id: 13, // Cryptic's ID
     title: "Cryptic",
     image: "/images/cryptic.png",
     redirectUrl: "/executor-elite",
-    price: "Unknown",
-    resellers: "N/A",
+    price: "Unknown", // Will be dynamically updated
+    resellers: "N/A", // Will be dynamically updated
     shadeColor: "gray",
     popular: true,
   },
@@ -92,8 +92,8 @@ const initialSelections = [
     title: "Fluxus",
     image: "/images/fluxus.png",
     redirectUrl: "/pro-tools",
-    price: "$13.49",
-    resellers: "99+",
+    price: "$13.49", // Initial static price
+    resellers: "99+", // Initial static resellers
     shadeColor: "slate",
     popular: true,
   },
@@ -102,8 +102,8 @@ const initialSelections = [
     title: "Exoliner",
     image: "/images/exoliner.png",
     redirectUrl: "/",
-    price: "$16.99",
-    resellers: "54",
+    price: "$16.99", // Initial static price
+    resellers: "54", // Initial static resellers
     shadeColor: "purple",
     popular: false,
   },
@@ -112,8 +112,8 @@ const initialSelections = [
     title: "Macsploit",
     image: "/images/macsploit.png",
     redirectUrl: "/anime-scripts",
-    price: "$5.99",
-    resellers: "99+",
+    price: "$5.99", // Initial static price
+    resellers: "99+", // Initial static resellers
     shadeColor: "slate",
     popular: false,
   },
@@ -122,8 +122,8 @@ const initialSelections = [
     title: "Ronin",
     image: "/images/ronin.png",
     redirectUrl: "/fox-tools",
-    price: "$11.49",
-    resellers: "73",
+    price: "$11.49", // Initial static price
+    resellers: "73", // Initial static resellers
     shadeColor: "slate",
     popular: false,
   },
@@ -132,108 +132,108 @@ const initialSelections = [
     title: "ArceusX",
     image: "/images/arceusx.png",
     redirectUrl: "/arceusx",
-    price: "$14.99",
-    resellers: "88",
+    price: "$14.99", // Initial static price
+    resellers: "88", // Initial static resellers
     shadeColor: "pink",
     popular: true,
   },
-  {
-    id: 18,
+    {
+    id: 9,
     title: "Seliware",
     image: "/images/seliware.png",
     redirectUrl: "/phantom-suite",
-    price: "$11.99",
-    resellers: "99+",
+    price: "$11.99", // Initial static price
+    resellers: "99+", // Initial static resellers
     shadeColor: "purple",
     popular: true,
   },
   {
-    id: 19,
+    id: 10,
     title: "Valex",
     image: "/images/valex.png",
     redirectUrl: "/cipher-vault",
-    price: "$6.99",
-    resellers: "99+",
+    price: "$6.99", // Initial static price
+    resellers: "99+", // Initial static resellers
     shadeColor: "cyan",
     popular: false,
   },
   {
-    id: 20,
+    id: 11,
     title: "Assembly",
     image: "/images/assembly.png",
     redirectUrl: "/elite-package",
-    price: "$8.99",
-    resellers: "67",
+    price: "$8.99", // Initial static price
+    resellers: "67", // Initial static resellers
     shadeColor: "orange",
     popular: false,
   },
-  {
-    id: 21,
+    {
+    id: 11,
     title: "Serotonin",
     image: "/images/serotonin.png",
     redirectUrl: "/elite-package",
-    price: "$8.99",
-    resellers: "67",
+    price: "$8.99", // Initial static price
+    resellers: "67", // Initial static resellers
     shadeColor: "orange",
     popular: false,
   },
-  {
-    id: 22,
+    {
+    id: 10,
     title: "Matcha",
     image: "/images/matcha.png",
     redirectUrl: "/cipher-vault",
-    price: "$6.99",
-    resellers: "99+",
+    price: "$6.99", // Initial static price
+    resellers: "99+", // Initial static resellers
     shadeColor: "cyan",
     popular: false,
   },
   {
-    id: 23,
+    id: 11,
     title: "Aureus",
     image: "/images/aureus.png",
     redirectUrl: "/elite-package",
-    price: "$8.99",
-    resellers: "67",
+    price: "$8.99", // Initial static price
+    resellers: "67", // Initial static resellers
     shadeColor: "orange",
     popular: false,
   },
-  {
-    id: 24,
+      {
+    id: 10,
     title: "Potassium",
     image: "/images/potassium.png",
     redirectUrl: "/cipher-vault",
-    price: "$6.99",
-    resellers: "99+",
+    price: "$6.99", // Initial static price
+    resellers: "99+", // Initial static resellers
     shadeColor: "cyan",
     popular: false,
   },
   {
-    id: 25,
+    id: 11,
     title: "CodeX",
     image: "/images/codex.png",
     redirectUrl: "/elite-package",
-    price: "$8.99",
-    resellers: "67",
+    price: "$8.99", // Initial static price
+    resellers: "67", // Initial static resellers
     shadeColor: "orange",
     popular: false,
   },
-  {
-    id: 26,
+    {
+    id: 11,
     title: "Volcano",
     image: "/images/volcano.png",
     redirectUrl: "/elite-package",
-    price: "$8.99",
-    resellers: "67",
+    price: "$8.99", // Initial static price
+    resellers: "67", // Initial static resellers
     shadeColor: "orange",
     popular: false,
   },
-  {
-    id: 27,
+    {
+    id: 11,
     title: "Isabelle",
     image: "/images/isabelle.png",
     redirectUrl: "/elite-package",
-    price: "$8.99",
-    resellers: "67",
+    price: "$8.99", // Initial static price
+    resellers: "67", // Initial static resellers
     shadeColor: "orange",
     popular: false,
   },
@@ -242,7 +242,7 @@ const initialSelections = [
 // Function to parse price string to a number for sorting
 const parsePrice = (priceString: string): number => {
   const parsed = Number.parseFloat(priceString.replace(/[^0-9.-]+/g, ""))
-  return isNaN(parsed) ? Number.POSITIVE_INFINITY : parsed
+  return isNaN(parsed) ? Number.POSITIVE_INFINITY : parsed // Return infinity for invalid prices
 }
 
 export default function SelectionsPage() {
@@ -253,10 +253,10 @@ export default function SelectionsPage() {
   const [fetchLoading, setFetchLoading] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [dynamicProductInfo, setDynamicProductInfo] = useState<Record<string, { price: string; resellers: string }>>({})
-  const [showCrypticModal, setShowCrypticModal] = useState(false)
-  const [selectedCrypticPlatform, setSelectedCrypticPlatform] = useState<string | null>(null)
-  const [dynamicDurationTypes, setDynamicDurationTypes] = useState<string[]>([])
-  const [showGetStartedModal, setShowGetStartedModal] = useState(false)
+  const [showCrypticModal, setShowCrypticModal] = useState(false) // State for Cryptic modal
+  const [selectedCrypticPlatform, setSelectedCrypticPlatform] = useState<string | null>(null) // New state for selected Cryptic platform
+  const [dynamicDurationTypes, setDynamicDurationTypes] = useState<string[]>([]) // New state for dynamic duration keys
+  const [showGetStartedModal, setShowGetStartedModal] = useState(false) // Add state for GetStartedModal
   const resellersSectionRef = useRef<HTMLDivElement>(null)
 
   const handleLoadingComplete = () => {
@@ -264,6 +264,7 @@ export default function SelectionsPage() {
   }
 
   const handleGetStartedClick = () => {
+    // Handler for Get Started button
     setShowGetStartedModal(true)
   }
 
@@ -292,16 +293,17 @@ export default function SelectionsPage() {
     },
   ]
 
+
   // Helper to get display label for duration key
   const getDurationLabel = (key: string): string => {
     const numKey = Number.parseInt(key, 10)
     if (isNaN(numKey)) {
-      return key
+      return key // Fallback for non-numeric keys
     }
     return `${numKey} Day${numKey > 1 ? "s" : ""}`
   }
 
-  // Fetch initial data for all products on page load - BACK TO USING API ROUTES
+  // Fetch initial data for all products on page load
   useEffect(() => {
     const fetchAllProductData = async () => {
       const newDynamicInfo: Record<string, { price: string; resellers: string }> = {}
@@ -310,23 +312,20 @@ export default function SelectionsPage() {
         if (product.title === "Cryptic") {
           let overallLowestPrice = Number.POSITIVE_INFINITY
           let totalResellerCount = 0
-          const uniqueResellers = new Set<string>()
+          const uniqueResellers = new Set<string>() // To count unique resellers across platforms
 
           for (const platform of crypticPlatforms) {
             try {
-              const response = await fetch(`/api/products/cryptic-${platform}`, {
-                cache: 'force-cache', // Use cached version if available
-                next: { revalidate: 3600 } // Revalidate every hour
-              })
+              const response = await fetch(`/api/products/cryptic-${platform}`)
               if (!response.ok) {
+                // If a specific platform's data is not found, treat it as no resellers/prices for that platform
                 console.warn(`No data found for Cryptic ${platform}.`)
                 continue
               }
               const data: ApiProductResellersResponse = await response.json()
 
               Object.entries(data).forEach(([resellerName, resellerData]) => {
-                if (resellerName === '_meta') return // Skip metadata
-                uniqueResellers.add(resellerName)
+                uniqueResellers.add(resellerName) // Add reseller to set for unique count
                 Object.values(resellerData.durations).forEach((d) => {
                   const price = parsePrice(d.price)
                   if (!isNaN(price) && price < overallLowestPrice) {
@@ -346,61 +345,60 @@ export default function SelectionsPage() {
             resellers: totalResellerCount > 0 ? `${totalResellerCount}+ sellers` : "N/A",
           }
         } else {
-          try {
-            const response = await fetch(`/api/products/${product.title.toLowerCase()}`, {
-              cache: 'force-cache', // Use cached version if available
-              next: { revalidate: 3600 } // Revalidate every hour
-            })
+        try {
+          const response = await fetch(`/api/products/${product.title.toLowerCase()}`)
 
-            if (!response.ok) {
-              throw new Error(`Failed to fetch data for ${product.title}`)
-            }
+          if (!response.ok) {
+            throw new Error(`Failed to fetch data for ${product.title}`)
+          }
 
-            const data: ApiProductResellersResponse = await response.json()
+          const data: ApiProductResellersResponse = await response.json()
 
-            let lowestPrice = Number.POSITIVE_INFINITY
-            let resellerCount = 0
+          let lowestPrice = Number.POSITIVE_INFINITY
+          let resellerCount = 0
 
-            // Filter out metadata and ensure valid resellers only
-            const validResellers = Object.entries(data).filter(
-              ([key, reseller]) => key !== '_meta' && reseller && reseller.durations && Object.keys(reseller.durations).length > 0
-            )
+          // Ensure valid resellers only (with non-empty durations)
+          const validResellers = Object.entries(data).filter(
+            ([, reseller]) => reseller && reseller.durations && Object.keys(reseller.durations).length > 0
+          )
 
-            resellerCount = validResellers.length
+          resellerCount = validResellers.length
 
-            for (const [, resellerData] of validResellers) {
-              for (const duration of Object.values(resellerData.durations)) {
-                const price = parsePrice(duration.price)
-                if (!isNaN(price) && price < lowestPrice) {
-                  lowestPrice = price
-                }
+          for (const [, resellerData] of validResellers) {
+            for (const duration of Object.values(resellerData.durations)) {
+              const price = parsePrice(duration.price)
+              if (!isNaN(price) && price < lowestPrice) {
+                lowestPrice = price
               }
             }
-
-            newDynamicInfo[product.title] = {
-              price: lowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${lowestPrice.toFixed(2)}`,
-              resellers: resellerCount > 0 ? `${resellerCount}+ sellers` : "N/A",
-            }
-          } catch (e) {
-            console.error(`Error fetching data for ${product.title}:`, e)
-            newDynamicInfo[product.title] = {
-              price: "Unknown",
-              resellers: "N/A",
-            }
           }
+
+          newDynamicInfo[product.title] = {
+            price: lowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${lowestPrice.toFixed(2)}`,
+            resellers: resellerCount > 0 ? `${resellerCount}+ sellers` : "N/A",
+          }
+        } catch (e) {
+          console.error(`Error fetching data for ${product.title}:`, e)
+          newDynamicInfo[product.title] = {
+            price: "Unknown",
+            resellers: "N/A",
+          }
+        }
+
         }
       }
       setDynamicProductInfo(newDynamicInfo)
     }
 
     fetchAllProductData()
-  }, [])
+  }, []) // Run once on mount
 
   // Silent GET request on site load
   useEffect(() => {
     const silentFetch = async () => {
       try {
         await fetch("https://api.voxlis.net/resellers", { method: "GET" })
+        // Do nothing with the response
       } catch (e) {
         console.error("Silent fetch failed:", e)
       }
@@ -408,12 +406,12 @@ export default function SelectionsPage() {
     silentFetch()
   }, [])
 
-  // Fetch resellers for a specific product or Cryptic platform - BACK TO USING API ROUTES
+  // Fetch resellers for a specific product or Cryptic platform
   const fetchProductResellers = async (productTitle: string, platform?: string) => {
     setFetchLoading(true)
     setFetchError(null)
-    setFetchedResellers([])
-    setDynamicDurationTypes([])
+    setFetchedResellers([]) // Clear previous resellers
+    setDynamicDurationTypes([]) // Clear previous dynamic duration types
 
     try {
       let apiUrl = ""
@@ -423,10 +421,7 @@ export default function SelectionsPage() {
         apiUrl = `/api/products/${productTitle.toLowerCase()}`
       }
 
-      const response = await fetch(apiUrl, {
-        cache: 'force-cache', // Use cached version if available
-        next: { revalidate: 3600 } // Revalidate every hour
-      })
+      const response = await fetch(apiUrl)
 
       if (!response.ok) {
         throw new Error(`Failed to fetch data from external API: ${response.statusText}`)
@@ -435,10 +430,9 @@ export default function SelectionsPage() {
       const data: ApiProductResellersResponse = await response.json()
 
       const uniqueDurationKeys = new Set<string>()
-      Object.entries(data).forEach(([key, resellerData]) => {
-        if (key === '_meta') return // Skip metadata
-        Object.keys(resellerData.durations).forEach((durationKey) => {
-          uniqueDurationKeys.add(durationKey)
+      Object.values(data).forEach((resellerData) => {
+        Object.keys(resellerData.durations).forEach((key) => {
+          uniqueDurationKeys.add(key)
         })
       })
 
@@ -446,41 +440,41 @@ export default function SelectionsPage() {
         const numA = Number.parseInt(a, 10)
         const numB = Number.parseInt(b, 10)
         if (isNaN(numA) || isNaN(numB)) {
-          return a.localeCompare(b)
+          return a.localeCompare(b) // Fallback to string comparison for non-numeric keys
         }
-        return numA - numB
+        return numA - numB // Numeric sort
       })
       setDynamicDurationTypes(sortedDurationKeys)
 
       // Transform and calculate lowest price for sorting
-      const transformed: ResellerData[] = Object.entries(data)
-        .filter(([key]) => key !== '_meta') // Filter out metadata
-        .map(([resellerName, resellerData]) => {
-          let lowestPrice = Number.POSITIVE_INFINITY
-          const durations = resellerData.durations
+      const transformed: ResellerData[] = Object.entries(data).map(([resellerName, resellerData]) => {
+        let lowestPrice = Number.POSITIVE_INFINITY
+        const durations = resellerData.durations // Directly assign
 
-          Object.values(durations).forEach((d) => {
-            const price = parsePrice(d.price)
-            if (!isNaN(price) && price < lowestPrice) {
-              lowestPrice = price
-            }
-          })
-
-          return {
-            name: resellerName,
-            payments: resellerData.payments,
-            durations,
-            lowestPrice: lowestPrice === Number.POSITIVE_INFINITY ? 0 : lowestPrice,
-            isPremium: resellerData.premium || false,
-            pfpUrl: resellerData.pfp && resellerData.pfp !== "" ? resellerData.pfp : "/images/key-empire-logo.png",
-            isVerified: resellerData.verified || false,
+        Object.values(durations).forEach((d) => {
+          // Iterate over the actual durations object
+          const price = parsePrice(d.price)
+          if (!isNaN(price) && price < lowestPrice) {
+            lowestPrice = price
           }
         })
+
+        return {
+          name: resellerName,
+          payments: resellerData.payments,
+          durations, // Directly assign
+          lowestPrice: lowestPrice === Number.POSITIVE_INFINITY ? 0 : lowestPrice, // Handle case with no valid prices
+          isPremium: resellerData.premium || false, // Set premium status
+          // Use key-empire-logo.png as fallback for pfp if not found or empty
+          pfpUrl: resellerData.pfp && resellerData.pfp !== "" ? resellerData.pfp : "/images/key-empire-logo.png",
+          isVerified: resellerData.verified || false, // Set verified status
+        }
+      })
 
       // Sort resellers by lowest price ascending, with random tie-breaking
       transformed.sort((a, b) => {
         if (a.lowestPrice === b.lowestPrice) {
-          return Math.random() - 0.5
+          return Math.random() - 0.5 // Randomly sort if prices are equal
         }
         return a.lowestPrice - b.lowestPrice
       })
@@ -501,36 +495,37 @@ export default function SelectionsPage() {
   // Handle product selection (including opening Cryptic modal)
   const handleProductSelect = (productTitle: string) => {
     if (productTitle === "Cryptic") {
-      setSelectedProduct("Cryptic")
-      setShowCrypticModal(true)
-      setFetchedResellers([])
-      setFetchError(null)
-      setSelectedCrypticPlatform(null)
-      setDynamicDurationTypes([])
+      setSelectedProduct("Cryptic") // Keep Cryptic card selected
+      setShowCrypticModal(true) // Open Cryptic modal
+      setFetchedResellers([]) // Clear resellers table
+      setFetchError(null) // Clear any previous fetch errors
+      setSelectedCrypticPlatform(null) // Reset selected platform for Cryptic
+      setDynamicDurationTypes([]) // Clear dynamic duration types
     } else if (selectedProduct === productTitle) {
+      // Start exit animation for other products
       setIsResellersExiting(true)
       setTimeout(() => {
         setSelectedProduct(null)
         setFetchedResellers([])
         setFetchError(null)
         setIsResellersExiting(false)
-        setSelectedCrypticPlatform(null)
-        setDynamicDurationTypes([])
+        setSelectedCrypticPlatform(null) // Ensure Cryptic platform is also reset
+        setDynamicDurationTypes([]) // Clear dynamic duration types
       }, 600)
     } else {
       setSelectedProduct(productTitle)
       setIsResellersExiting(false)
-      setSelectedCrypticPlatform(null)
-      fetchProductResellers(productTitle)
+      setSelectedCrypticPlatform(null) // Clear Cryptic platform if another product is selected
+      fetchProductResellers(productTitle) // Fetch data for the newly selected product
     }
   }
 
   // Handle platform selection from Cryptic modal
   const handleCrypticPlatformSelect = (platform: string) => {
     setSelectedCrypticPlatform(platform)
-    setShowCrypticModal(false)
-    setIsResellersExiting(false)
-    fetchProductResellers("Cryptic", platform)
+    setShowCrypticModal(false) // Close the modal
+    setIsResellersExiting(false) // Ensure no exit animation is pending
+    fetchProductResellers("Cryptic", platform) // Fetch resellers for the selected Cryptic platform
   }
 
   // Scroll to resellers section when a product is selected or a Cryptic platform is chosen
@@ -562,8 +557,8 @@ export default function SelectionsPage() {
   // Prepare selections for ProductsGrid with dynamic data
   const displayedSelections = initialSelections.map((selection) => ({
     ...selection,
-    price: dynamicProductInfo[selection.title]?.price || selection.price,
-    resellers: dynamicProductInfo[selection.title]?.resellers || selection.resellers,
+    price: dynamicProductInfo[selection.title]?.price || selection.price, // Fallback to static if dynamic not loaded yet
+    resellers: dynamicProductInfo[selection.title]?.resellers || selection.resellers, // Fallback to static
   }))
 
   // Determine if the resellers section should be visible
@@ -583,6 +578,7 @@ export default function SelectionsPage() {
         backgroundBlendMode: "overlay",
       }}
     >
+      {/* Animated Background Bubbles */}
       <AnimatedBackground />
 
       {showLoading && <LoadingScreen onLoadingComplete={handleLoadingComplete} />}
@@ -590,16 +586,20 @@ export default function SelectionsPage() {
 
       <main className="px-4 py-8 mt-40 relative z-10 md:mt-32">
         <div className="w-[95%] max-w-7xl mx-auto">
+          {/* Hero Section */}
           <SelectionsHeroSection />
 
+          {/* Quick Selections Section */}
           <div className="mb-16">
             <div className="max-w-6xl mx-auto px-4">
-              <QuickSelectionsGrid quickLinks={quickLinks} onOpenGetStartedModal={handleGetStartedClick} />
+              <QuickSelectionsGrid quickLinks={quickLinks} onOpenGetStartedModal={handleGetStartedClick} />{" "}
+              {/* Pass the prop here */}
             </div>
           </div>
 
+          {/* Products Grid */}
           <ProductsGrid
-            selections={displayedSelections}
+            selections={displayedSelections} // Use the dynamically updated selections
             onProductSelect={handleProductSelect}
             selectedProduct={selectedProduct}
           />
@@ -788,7 +788,7 @@ export default function SelectionsPage() {
                                     }}
                                   >
                                     <Image
-                                      src={reseller.pfpUrl || "/placeholder.svg"}
+                                      src={reseller.pfpUrl || "/placeholder.svg"} // Use the pfpUrl directly
                                       alt={`${reseller.name}'s profile picture`}
                                       width={40}
                                       height={40}
@@ -844,6 +844,7 @@ export default function SelectionsPage() {
                             {/* Payment Methods */}
                             <td className="p-4">
                               <div className="flex flex-wrap justify-center gap-2">
+                                {" "}
                                 {reseller.payments.map((method, methodIndex) => (
                                   <div
                                     key={methodIndex}
@@ -919,455 +920,458 @@ export default function SelectionsPage() {
             </div>
           )}
 
+          {/* Bottom spacing */}
           <div className="h-16"></div>
         </div>
       </main>
 
       <Footer />
 
+      {/* Cryptic Modal */}
       <CrypticModal
         isOpen={showCrypticModal}
         onClose={() => setShowCrypticModal(false)}
         onPlatformSelect={handleCrypticPlatformSelect}
       />
 
+      {/* Get Started Modal */}
       <GetStartedModal isOpen={showGetStartedModal} onClose={() => setShowGetStartedModal(false)} />
 
       <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(40px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+@keyframes fadeInUp {
+from {
+  opacity: 0;
+  transform: translateY(40px);
+}
+to {
+  opacity: 1;
+  transform: translateY(0);
+}
+}
 
-        @keyframes popUpBounce {
-          from {
-            opacity: 0;
-            transform: translateY(40px) scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
+@keyframes popUpBounce {
+from {
+  opacity: 0;
+  transform: translateY(40px) scale(0.9);
+}
+to {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+}
 
-        @keyframes popUp3D {
-          from {
-            opacity: 0;
-            transform: translateY(60px) scale(0.8) rotateX(15deg);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1) rotateX(0deg);
-          }
-        }
+@keyframes popUp3D {
+from {
+  opacity: 0;
+  transform: translateY(60px) scale(0.8) rotateX(15deg);
+}
+to {
+  opacity: 1;
+  transform: translateY(0) scale(1) rotateX(0deg);
+}
+}
 
-        @keyframes float-slow {
-          0%,
-          100% {
-            transform: translateY(0px) translateX(0px);
-          }
-          25% {
-            transform: translateY(-20px) translateX(10px);
-          }
-          50% {
-            transform: translateY(-10px) translateX(-15px);
-          }
-          75% {
-            transform: translateY(-25px) translateX(5px);
-          }
-        }
+@keyframes float-slow {
+0%,
+100% {
+  transform: translateY(0px) translateX(0px);
+}
+25% {
+  transform: translateY(-20px) translateX(10px);
+}
+50% {
+  transform: translateY(-10px) translateX(-15px);
+}
+75% {
+  transform: translateY(-25px) translateX(5px);
+}
+}
 
-        @keyframes float-medium {
-          0%,
-          100% {
-            transform: translateY(0px) translateX(0px);
-          }
-          33% {
-            transform: translateY(-15px) translateX(-10px);
-          }
-          66% {
-            transform: translateY(-25px) translateX(15px);
-          }
-        }
+@keyframes float-medium {
+0%,
+100% {
+  transform: translateY(0px) translateX(0px);
+}
+33% {
+  transform: translateY(-15px) translateX(-10px);
+}
+66% {
+  transform: translateY(-25px) translateX(15px);
+}
+}
 
-        @keyframes float-fast {
-          0%,
-          100% {
-            transform: translateY(0px) translateX(0px);
-          }
-          50% {
-            transform: translateY(-30px) translateX(-20px);
-          }
-        }
+@keyframes float-fast {
+0%,
+100% {
+  transform: translateY(0px) translateX(0px);
+}
+50% {
+  transform: translateY(-30px) translateX(-20px);
+}
+}
 
-        @keyframes pulse-slow {
-          0%,
-          100% {
-            opacity: 0.4;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.8;
-            transform: scale(1.2);
-          }
-        }
+@keyframes pulse-slow {
+0%,
+100% {
+  opacity: 0.4;
+  transform: scale(1);
+}
+50% {
+  opacity: 0.8;
+  transform: scale(1.2);
+}
+}
 
-        @keyframes pulse-medium {
-          0%,
-          100% {
-            opacity: 0.3;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.7;
-            transform: scale(1.3);
-          }
-        }
+@keyframes pulse-medium {
+0%,
+100% {
+  opacity: 0.3;
+  transform: scale(1);
+}
+50% {
+  opacity: 0.7;
+  transform: scale(1.3);
+}
+}
 
-        @keyframes pulse-fast {
-          0%,
-          100% {
-            opacity: 0.5;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.9;
-            transform: scale(1.4);
-          }
-        }
+@keyframes pulse-fast {
+0%,
+100% {
+  opacity: 0.5;
+  transform: scale(1);
+}
+50% {
+  opacity: 0.9;
+  transform: scale(1.4);
+}
+}
 
-        @keyframes spin-slow {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
+@keyframes spin-slow {
+from {
+  transform: rotate(0deg);
+}
+to {
+  transform: rotate(360deg);
+}
+}
 
-        @keyframes spin-reverse {
-          from {
-            transform: rotate(360deg);
-          }
-          to {
-            transform: rotate(0deg);
-          }
-        }
+@keyframes spin-reverse {
+from {
+  transform: rotate(360deg);
+}
+to {
+  transform: rotate(0deg);
+}
+}
 
-        .animate-float-slow {
-          animation: float-slow 8s ease-in-out infinite;
-        }
+.animate-float-slow {
+animation: float-slow 8s ease-in-out infinite;
+}
 
-        .animate-float-medium {
-          animation: float-medium 6s ease-in-out infinite;
-        }
+.animate-float-medium {
+animation: float-medium 6s ease-in-out infinite;
+}
 
-        .animate-float-fast {
-          animation: float-fast 4s ease-in-out infinite;
-        }
+.animate-float-fast {
+animation: float-fast 4s ease-in-out infinite;
+}
 
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
+.animate-pulse-slow {
+animation: pulse-slow 4s ease-in-out infinite;
+}
 
-        .animate-pulse-medium {
-          animation: pulse-medium 3s ease-in-out infinite;
-        }
+.animate-pulse-medium {
+animation: pulse-medium 3s ease-in-out infinite;
+}
 
-        .animate-pulse-fast {
-          animation: pulse-fast 2s ease-in-out infinite;
-        }
+.animate-pulse-fast {
+animation: pulse-fast 2s ease-in-out infinite;
+}
 
-        .animate-spin-slow {
-          animation: spin-slow 20s linear infinite;
-        }
+.animate-spin-slow {
+animation: spin-slow 20s linear infinite;
+}
 
-        .animate-spin-reverse {
-          animation: spin-reverse 15s linear infinite;
-        }
+.animate-spin-reverse {
+animation: spin-reverse 15s linear infinite;
+}
 
-        /* Reseller Section Entry Animations */
-        @keyframes resellerBannerIn {
-          0% {
-            opacity: 0;
-            transform: translateY(50px) scale(0.9);
-          }
-          60% {
-            opacity: 1;
-            transform: translateY(-10px) scale(1.02);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
+/* Reseller Section Entry Animations */
+@keyframes resellerBannerIn {
+0% {
+  opacity: 0;
+  transform: translateY(50px) scale(0.9);
+}
+60% {
+  opacity: 1;
+  transform: translateY(-10px) scale(1.02);
+}
+100% {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+}
 
-        @keyframes iconSpinIn {
-          0% {
-            opacity: 0;
-            transform: scale(0) rotate(-180deg);
-          }
-          70% {
-            opacity: 1;
-            transform: scale(1.2) rotate(20deg);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1) rotate(0deg);
-          }
-        }
+@keyframes iconSpinIn {
+0% {
+  opacity: 0;
+  transform: scale(0) rotate(-180deg);
+}
+70% {
+  opacity: 1;
+  transform: scale(1.2) rotate(20deg);
+}
+100% {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+}
 
-        @keyframes textSlideIn {
-          0% {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+@keyframes textSlideIn {
+0% {
+  opacity: 0;
+  transform: translateY(20px);
+}
+100% {
+  opacity: 1;
+  transform: translateY(0);
+}
+}
 
-        @keyframes tableSlideIn {
-          0% {
-            opacity: 0;
-            transform: translateY(60px) scale(0.95);
-          }
-          60% {
-            opacity: 1;
-            transform: translateY(-10px) scale(1.01);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
+@keyframes tableSlideIn {
+0% {
+  opacity: 0;
+  transform: translateY(60px) scale(0.95);
+}
+60% {
+  opacity: 1;
+  transform: translateY(-10px) scale(1.01);
+}
+100% {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+}
 
-        @keyframes headerSlideIn {
-          0% {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+@keyframes headerSlideIn {
+0% {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+100% {
+  opacity: 1;
+  transform: translateY(0);
+}
+}
 
-        @keyframes rowSlideIn {
-          0% {
-            opacity: 0;
-            transform: translateX(-50px);
-          }
-          60% {
-            opacity: 1;
-            transform: translateX(5px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
+@keyframes rowSlideIn {
+0% {
+  opacity: 0;
+  transform: translateX(-50px);
+}
+60% {
+  opacity: 1;
+  transform: translateX(5px);
+}
+100% {
+  opacity: 1;
+  transform: translateX(0);
+}
+}
 
-        @keyframes avatarPopIn {
-          0% {
-            opacity: 0;
-            transform: scale(0);
-          }
-          60% {
-            opacity: 1;
-            transform: scale(1.2);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
+@keyframes avatarPopIn {
+0% {
+  opacity: 0;
+  transform: scale(0);
+}
+60% {
+  opacity: 1;
+  transform: scale(1.2);
+}
+100% {
+  opacity: 1;
+  transform: scale(1);
+}
+}
 
-        @keyframes badgeSpinIn {
-          0% {
-            opacity: 0;
-            transform: scale(0) rotate(-180deg);
-          }
-          70% {
-            opacity: 1;
-            transform: scale(1.3) rotate(10deg);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1) rotate(0deg);
-          }
-        }
+@keyframes badgeSpinIn {
+0% {
+  opacity: 0;
+  transform: scale(0) rotate(-180deg);
+}
+70% {
+  opacity: 1;
+  transform: scale(1.3) rotate(10deg);
+}
+100% {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+}
 
-        @keyframes nameSlideIn {
-          0% {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
+@keyframes nameSlideIn {
+0% {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+100% {
+  opacity: 1;
+  transform: translateX(0);
+}
+}
 
-        @keyframes paymentIconIn {
-          0% {
-            opacity: 0;
-            transform: scale(0) rotate(90deg);
-          }
-          60% {
-            opacity: 1;
-            transform: scale(1.2) rotate(-10deg);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1) rotate(0deg);
-          }
-        }
+@keyframes paymentIconIn {
+0% {
+  opacity: 0;
+  transform: scale(0) rotate(90deg);
+}
+60% {
+  opacity: 1;
+  transform: scale(1.2) rotate(-10deg);
+}
+100% {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+}
 
-        @keyframes priceButtonIn {
-          0% {
-            opacity: 0;
-            transform: translateY(30px) scale(0.8);
-          }
-          60% {
-            opacity: 1;
-            transform: translateY(-5px) scale(1.05);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
+@keyframes priceButtonIn {
+0% {
+  opacity: 0;
+  transform: translateY(30px) scale(0.8);
+}
+60% {
+  opacity: 1;
+  transform: translateY(-5px) scale(1.05);
+}
+100% {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+}
 
-        /* Reseller Section Exit Animations */
-        @keyframes resellerBannerOut {
-          0% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(-50px) scale(0.9);
-          }
-        }
+/* Reseller Section Exit Animations */
+@keyframes resellerBannerOut {
+0% {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+100% {
+  opacity: 0;
+  transform: translateY(-50px) scale(0.9);
+}
+}
 
-        @keyframes iconSpinOut {
-          0% {
-            opacity: 1;
-            transform: scale(1) rotate(0deg);
-          }
-          100% {
-            opacity: 0;
-            transform: scale(0) rotate(180deg);
-          }
-        }
+@keyframes iconSpinOut {
+0% {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+100% {
+  opacity: 0;
+  transform: scale(0) rotate(180deg);
+}
+}
 
-        @keyframes textSlideOut {
-          0% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-        }
+@keyframes textSlideOut {
+0% {
+  opacity: 1;
+  transform: translateY(0);
+}
+100% {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+}
 
-        @keyframes tableSlideOut {
-          0% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(60px) scale(0.95);
-          }
-        }
+@keyframes tableSlideOut {
+0% {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+100% {
+  opacity: 0;
+  transform: translateY(60px) scale(0.95);
+}
+}
 
-        @keyframes headerSlideOut {
-          0% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-        }
+@keyframes headerSlideOut {
+0% {
+  opacity: 1;
+  transform: translateY(0);
+}
+100% {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+}
 
-        @keyframes rowSlideOut {
-          0% {
-            opacity: 1;
-            transform: translateX(0);
-          }
-          100% {
-            opacity: 0;
-            transform: translateX(-50px);
-          }
-        }
+@keyframes rowSlideOut {
+0% {
+  opacity: 1;
+  transform: translateX(0);
+}
+100% {
+  opacity: 0;
+  transform: translateX(-50px);
+}
+}
 
-        @keyframes avatarPopOut {
-          0% {
-            opacity: 1;
-            transform: scale(1);
-          }
-          100% {
-            opacity: 0;
-            transform: scale(0);
-          }
-        }
+@keyframes avatarPopOut {
+0% {
+  opacity: 1;
+  transform: scale(1);
+}
+100% {
+  opacity: 0;
+  transform: scale(0);
+}
+}
 
-        @keyframes badgeSpinOut {
-          0% {
-            opacity: 1;
-            transform: scale(1) rotate(0deg);
-          }
-          100% {
-            opacity: 0;
-            transform: scale(0) rotate(-180deg);
-          }
-        }
+@keyframes badgeSpinOut {
+0% {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+100% {
+  opacity: 0;
+  transform: scale(0) rotate(-180deg);
+}
+}
 
-        @keyframes nameSlideOut {
-          0% {
-            opacity: 1;
-            transform: translateX(0);
-          }
-          100% {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-        }
+@keyframes nameSlideOut {
+0% {
+  opacity: 1;
+  transform: translateX(0);
+}
+100% {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+}
 
-        @keyframes paymentIconOut {
-          0% {
-            opacity: 1;
-            transform: scale(1) rotate(0deg);
-          }
-          100% {
-            opacity: 0;
-            transform: scale(0) rotate(-90deg);
-          }
-        }
+@keyframes paymentIconOut {
+0% {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+100% {
+  opacity: 0;
+  transform: scale(0) rotate(-90deg);
+}
+}
 
-        @keyframes priceButtonOut {
-          0% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(30px) scale(0.8);
-          }
-        }
-      `}</style>
+@keyframes priceButtonOut {
+0% {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+100% {
+  opacity: 0;
+  transform: translateY(30px) scale(0.8);
+}
+}
+`}</style>
     </div>
   )
 }
