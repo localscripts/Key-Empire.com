@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 
 // Generate static params for all possible product titles
 export async function generateStaticParams() {
+  // List of all possible product titles that might be requested
   const productTitles = [
     "zenith",
     "wave",
@@ -29,122 +30,33 @@ export async function generateStaticParams() {
   ]
 
   return productTitles.map((productTitle) => ({
-    productTitle,
+    productTitle: productTitle,
   }))
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ productTitle: string }> }
-) {
-  const { productTitle } = await params
+export async function GET(request: NextRequest, { params }: { params: { productTitle: string } }) {
+  const { productTitle } = params
 
   try {
     const externalApiUrl = `https://api.voxlis.net/products/${productTitle}.json`
-    
-    console.log(`[API] Fetching from: ${externalApiUrl}`)
-
-    const response = await fetch(externalApiUrl, {
-      method: 'GET',
-      cache: "no-store",
-      headers: { 
-        "User-Agent": "NextJS-Fresh-Fetch/1.0",
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        // Add cache-busting headers to prevent production caching issues
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        "Pragma": "no-cache",
-        "Expires": "0"
-      },
-    })
-
-    console.log(`[API] Response status: ${response.status}`)
-    console.log(`[API] Response headers:`, Object.fromEntries(response.headers.entries()))
+    const response = await fetch(externalApiUrl)
 
     if (!response.ok) {
-      console.error(`[API] External API error for ${productTitle}:`, response.status, response.statusText)
+      // If the external API returns an error, propagate it
       return new NextResponse(
-        JSON.stringify({
-          error: `Failed to fetch data from external API: ${response.statusText}`,
-          productTitle,
-          status: response.status
-        }),
-        {
-          status: response.status,
-          headers: { 
-            "Content-Type": "application/json",
-            "Cache-Control": "no-store, max-age=0"
-          },
-        }
+        JSON.stringify({ error: `Failed to fetch data from external API: ${response.statusText}` }),
+        { status: response.status, headers: { "Content-Type": "application/json" } },
       )
     }
 
-    // Get raw text first to debug potential parsing issues
-    const rawText = await response.text()
-    console.log(`[API] Raw response length: ${rawText.length}`)
-    console.log(`[API] Raw response preview: ${rawText.substring(0, 200)}...`)
-
-    let data
-    try {
-      data = JSON.parse(rawText)
-    } catch (parseError) {
-      console.error(`[API] JSON parse error:`, parseError)
-      return new NextResponse(
-        JSON.stringify({
-          error: "Invalid JSON response from external API",
-          productTitle,
-          rawResponse: rawText.substring(0, 500)
-        }),
-        {
-          status: 500,
-          headers: { 
-            "Content-Type": "application/json",
-            "Cache-Control": "no-store, max-age=0"
-          },
-        }
-      )
-    }
-    
-    console.log(`[API] Parsed data type: ${typeof data}`)
-    console.log(`[API] Number of resellers: ${Object.keys(data || {}).length}`)
-    console.log(`[API] Reseller names: ${Object.keys(data || {}).join(', ')}`)
-    
-    // Add metadata to help debug the response
-    const responseData = {
-      ...data,
-      _meta: {
-        productTitle,
-        fetchedAt: new Date().toISOString(),
-        resellerCount: Object.keys(data || {}).length,
-        environment: process.env.NODE_ENV || 'production'
-      }
-    }
-
-    return NextResponse.json(responseData, {
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store, max-age=0",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET",
-        "Access-Control-Allow-Headers": "Content-Type"
-      }
-    })
+    const data = await response.json()
+    return NextResponse.json(data)
   } catch (error: any) {
-    console.error(`[API] Error in API route for ${productTitle}:`, error)
-    return new NextResponse(
-      JSON.stringify({ 
-        error: "Internal Server Error", 
-        details: error.message,
-        productTitle,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      }),
-      {
-        status: 500,
-        headers: { 
-          "Content-Type": "application/json",
-          "Cache-Control": "no-store, max-age=0"
-        },
-      }
-    )
+    console.error("Error in API route:", error)
+    return new NextResponse(JSON.stringify({ error: "Internal Server Error", details: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    })
   }
+
 }
