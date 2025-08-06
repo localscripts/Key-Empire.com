@@ -4,11 +4,11 @@ import { type NextRequest, NextResponse } from "next/server"
 export async function generateStaticParams() {
   const productTitles = [
     "zenith",
-    "wave", 
+    "wave",
     "bunni",
     "cryptic",
     "cryptic-windows",
-    "cryptic-macos", 
+    "cryptic-macos",
     "cryptic-ios",
     "cryptic-android",
     "fluxus",
@@ -51,6 +51,7 @@ export async function GET(
         "User-Agent": "NextJS-Fresh-Fetch/1.0",
         "Accept": "application/json",
         "Content-Type": "application/json",
+        // Add cache-busting headers to prevent production caching issues
         "Cache-Control": "no-cache, no-store, must-revalidate",
         "Pragma": "no-cache",
         "Expires": "0"
