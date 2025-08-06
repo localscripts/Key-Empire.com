@@ -345,40 +345,46 @@ export default function SelectionsPage() {
             resellers: totalResellerCount > 0 ? `${totalResellerCount}+ sellers` : "N/A",
           }
         } else {
-          // Existing logic for other products
-          try {
-            const response = await fetch(`/api/products/${product.title.toLowerCase()}`)
-            if (!response.ok) {
-              throw new Error(`Failed to fetch data for ${product.title}`)
-            }
-            const data: ApiProductResellersResponse = await response.json()
+        try {
+          const response = await fetch(`/api/products/${product.title.toLowerCase()}`)
 
-            let lowestPrice = Number.POSITIVE_INFINITY
-            let resellerCount = 0
+          if (!response.ok) {
+            throw new Error(`Failed to fetch data for ${product.title}`)
+          }
 
-            const validResellers = Object.values(data).filter((reseller) => Object.keys(reseller.durations).length > 0)
-            resellerCount = validResellers.length
+          const data: ApiProductResellersResponse = await response.json()
 
-            validResellers.forEach((resellerData) => {
-              Object.values(resellerData.durations).forEach((d) => {
-                const price = parsePrice(d.price)
-                if (!isNaN(price) && price < lowestPrice) {
-                  lowestPrice = price
-                }
-              })
-            })
+          let lowestPrice = Number.POSITIVE_INFINITY
+          let resellerCount = 0
 
-            newDynamicInfo[product.title] = {
-              price: lowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${lowestPrice.toFixed(2)}`,
-              resellers: resellerCount > 0 ? `${resellerCount}+ sellers` : "N/A",
-            }
-          } catch (e) {
-            console.error(`Error fetching data for ${product.title}:`, e)
-            newDynamicInfo[product.title] = {
-              price: "Unknown",
-              resellers: "N/A",
+          // Ensure valid resellers only (with non-empty durations)
+          const validResellers = Object.entries(data).filter(
+            ([, reseller]) => reseller && reseller.durations && Object.keys(reseller.durations).length > 0
+          )
+
+          resellerCount = validResellers.length
+
+          for (const [, resellerData] of validResellers) {
+            for (const duration of Object.values(resellerData.durations)) {
+              const price = parsePrice(duration.price)
+              if (!isNaN(price) && price < lowestPrice) {
+                lowestPrice = price
+              }
             }
           }
+
+          newDynamicInfo[product.title] = {
+            price: lowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${lowestPrice.toFixed(2)}`,
+            resellers: resellerCount > 0 ? `${resellerCount}+ sellers` : "N/A",
+          }
+        } catch (e) {
+          console.error(`Error fetching data for ${product.title}:`, e)
+          newDynamicInfo[product.title] = {
+            price: "Unknown",
+            resellers: "N/A",
+          }
+        }
+
         }
       }
       setDynamicProductInfo(newDynamicInfo)
