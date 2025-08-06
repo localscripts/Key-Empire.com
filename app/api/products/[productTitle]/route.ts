@@ -39,20 +39,28 @@ export async function GET(request: NextRequest, { params }: { params: { productT
 
   try {
     const externalApiUrl = `https://api.voxlis.net/products/${productTitle}.json`
+    console.log(`[API Route] Fetching from external API: ${externalApiUrl}`); // Log external API URL
     const response = await fetch(externalApiUrl)
 
     if (!response.ok) {
-      // If the external API returns an error, propagate it
+      const errorBody = await response.text(); // Read response body as text for more details
+      console.error(`[API Route] External API response not OK for ${externalApiUrl}: Status ${response.status}, Body: ${errorBody}`);
+      // If the external API returns an error, propagate it with more detail
       return new NextResponse(
-        JSON.stringify({ error: `Failed to fetch data from external API: ${response.statusText}` }),
+        JSON.stringify({ 
+          error: `Failed to fetch data from external API: ${response.statusText}`,
+          details: errorBody,
+          statusCode: response.status
+        }),
         { status: response.status, headers: { "Content-Type": "application/json" } },
       )
     }
 
     const data = await response.json()
+    console.log(`[API Route] Successfully fetched data for ${productTitle}:`, data); // Log successful data
     return NextResponse.json(data)
   } catch (error: any) {
-    console.error("Error in API route:", error)
+    console.error("[API Route] Error in API route:", error)
     return new NextResponse(JSON.stringify({ error: "Internal Server Error", details: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
