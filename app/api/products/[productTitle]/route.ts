@@ -40,7 +40,7 @@ export async function GET(request: NextRequest, { params }: { params: { productT
   try {
     const externalApiUrl = `https://api.voxlis.net/products/${productTitle}.json`
     console.log(`[API Route] Fetching from external API: ${externalApiUrl}`); // Log external API URL
-    const response = await fetch(externalApiUrl)
+    const response = await fetch(externalApiUrl, { cache: 'no-store' }) // Added cache: 'no-store'
 
     if (!response.ok) {
       const errorBody = await response.text(); // Read response body as text for more details
