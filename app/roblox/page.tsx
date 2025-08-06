@@ -415,18 +415,13 @@ export default function SelectionsPage() {
         apiUrl = `/api/products/${productTitle.toLowerCase()}`
       }
 
-      console.log(`[Client] Initiating fetch for resellers from: ${apiUrl}`); // Log the API URL
       const response = await fetch(apiUrl)
 
       if (!response.ok) {
-        const errorText = await response.text(); // Get raw error text
-        console.error(`[Client] API response not OK for ${apiUrl}: Status ${response.status}, Text: ${errorText}`);
-        throw new Error(`Failed to fetch data from API route: ${response.statusText} - ${errorText}`);
+        throw new Error(`Failed to fetch data from external API: ${response.statusText}`)
       }
 
       const data: ApiProductResellersResponse = await response.json()
-      console.log(`[Client] Raw data received for ${productTitle} (${platform || 'N/A'}):`, data); // Log raw data
-      console.log(`[Client] Number of raw reseller entries received: ${Object.keys(data).length}`); // Log count of raw entries
 
       const uniqueDurationKeys = new Set<string>()
       Object.values(data).forEach((resellerData) => {
@@ -470,19 +465,22 @@ export default function SelectionsPage() {
         }
       })
 
-      console.log(`[Client] Number of transformed resellers: ${transformed.length}`); // Log count of transformed entries
-      console.log(`[Client] Transformed resellers for ${productTitle} (${platform || 'N/A'}):`, transformed); // Log transformed data
+      // Sort resellers by lowest price ascending, with random tie-breaking
+      transformed.sort((a, b) => {
+        if (a.lowestPrice === b.lowestPrice) {
+          return Math.random() - 0.5 // Randomly sort if prices are equal
+        }
+        return a.lowestPrice - b.lowestPrice
+      })
 
-      if (transformed.length === 0) {
-        setFetchError("No resellers found for this product or platform with available pricing.")
-      } else if (transformed.every((r) => Object.keys(r.durations).length === 0)) {
-        setFetchError("Resellers found, but no pricing information is available for this product or platform.")
+      if (transformed.length === 0 || transformed.every((r) => Object.keys(r.durations).length === 0)) {
+        setFetchError("Resellers are not found for this product or platform.")
       } else {
         setFetchedResellers(transformed)
       }
     } catch (e: any) {
-      console.error("[Client] Error fetching product resellers:", e)
-      setFetchError(`Failed to load resellers: ${e.message || "An unknown error occurred."}`)
+      console.error("Error fetching product resellers:", e)
+      setFetchError("Resellers are not found for this product or platform.")
     } finally {
       setFetchLoading(false)
     }
@@ -754,7 +752,7 @@ export default function SelectionsPage() {
                       <tbody>
                         {fetchedResellers.map((reseller, rowIndex) => (
                           <tr
-                            key={reseller.name} // Using reseller.name as key, assuming it's unique
+                            key={reseller.name}
                             className={`border-b border-gray-100 dark:border-gray-600 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors duration-200 ${
                               isResellersExiting ? "row-exit" : ""
                             }`}
