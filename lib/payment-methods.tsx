@@ -23,7 +23,15 @@ export const PAYMENT_METHODS: { [key: string]: { name: string; icon: React.React
   },
   crypto: {
     name: "Crypto",
-    icon: <Wallet className="w-5 h-5 text-gray-600 dark:text-gray-400" />, // Lucide React icon
+    icon: <Image src="/images/crypto.svg" alt="Crypto" width={20} height={20} draggable={false} />,
+  },
+  cashapp: {
+    name: "Cashapp",
+    icon: <Image src="/images/cashapp.svg" alt="Cashapp" width={20} height={20} draggable={false} />,
+  },
+    robux: {
+    name: "Robux",
+    icon: <Image src="/images/robux.svg" alt="Robux" width={20} height={20} draggable={false} />,
   },
   visa: {
     name: "Visa",
