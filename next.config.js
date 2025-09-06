@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-
+  output: "standalone"
   // Add trailing slash for GitHub Pages compatibility
   trailingSlash: true,
 
