@@ -1,7 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable static site generation for GitHub Pages
-  output: "export",
 
   // Add trailing slash for GitHub Pages compatibility
   trailingSlash: true,
