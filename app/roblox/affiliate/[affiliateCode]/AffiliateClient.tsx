@@ -1,4 +1,4 @@
-// app/counterstrike2/affiliate/[affiliateCode]/AffiliateClient.tsx
+
 
 "use client"
 
@@ -22,3 +22,4 @@ export default function AffiliateClient({ affiliateCode }: { affiliateCode: stri
     </div>
   )
 }
+
