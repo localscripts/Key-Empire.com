@@ -27,6 +27,20 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  // Image configuration - accept all remote images
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
+      },
+    ],
+  },
 }
 
 module.exports = nextConfig
