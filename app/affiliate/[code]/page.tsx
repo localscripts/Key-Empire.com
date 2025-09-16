@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { setAffiliateCode } from "@/lib/affiliate"
 
 export default function AffiliatePage() {
   const params = useParams()
@@ -11,9 +12,8 @@ export default function AffiliatePage() {
     const affiliateCode = params.code as string
 
     if (affiliateCode) {
-      // Store affiliate code in localStorage
-      localStorage.setItem("affiliate_code", affiliateCode)
-      console.log("[v0] Affiliate code stored:", affiliateCode)
+      setAffiliateCode(affiliateCode)
+      console.log("[v0] Affiliate code stored in cookie:", affiliateCode)
 
       // Redirect to main site with affiliate parameter
       router.replace(`/?affiliate=${affiliateCode}`)

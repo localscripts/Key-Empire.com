@@ -11,6 +11,7 @@ import { PRODUCTS_LIST, parsePrice } from "../../lib/products-data"
 import Image from "next/image"
 import { Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { getPaymentMethodIcon } from "../../lib/payment-methods" // Updated to use new simplified payment methods system
+import { initializeAffiliate, type AffiliateConfig } from "../../lib/affiliate"
 
 // New type definitions for API response
 interface DurationPricing {
@@ -103,131 +104,164 @@ export default function SelectionsPage() {
   const productsPerPage = 10 // Updated from 8 to 10 products per page
   const resellersSectionRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [affiliateConfig, setAffiliateConfig] = useState<AffiliateConfig>({ code: null, isActive: false })
+
+  const [AFFILIATE_SYSTEM] = useState(() => {
+    const applyAffiliateTransformation = (url: string, affiliateCode: string | null): string => {
+      if (!affiliateCode || !url) return url
+
+      try {
+        const urlObj = new URL(url)
+        const domain = urlObj.hostname.toLowerCase()
+
+        console.log("[v0] [AFFILIATE_SYSTEM] Transforming URL:", url, "with code:", affiliateCode)
+
+        // Transform based on domain
+        if (domain.includes("robloxcheatz.com")) {
+          const transformedUrl = `https://robloxcheatz.com/affiliate/${affiliateCode}`
+          console.log("[v0] [AFFILIATE_SYSTEM] Transformed robloxcheatz.com:", transformedUrl)
+          return transformedUrl
+        }
+
+        if (domain.includes("cheapkeyz.store")) {
+          const transformedUrl = `https://cheapkeyz.store/affiliate/${affiliateCode}`
+          console.log("[v0] [AFFILIATE_SYSTEM] Transformed cheapkeyz.store:", transformedUrl)
+          return transformedUrl
+        }
+
+        if (domain.includes("bloxproducts.com")) {
+          const hash = urlObj.hash
+          const transformedUrl = `https://bloxproducts.com/?affiliate_key=${affiliateCode}${hash}`
+          console.log("[v0] [AFFILIATE_SYSTEM] Transformed bloxproducts.com:", transformedUrl)
+          return transformedUrl
+        }
+
+        console.log("[v0] [AFFILIATE_SYSTEM] No transformation needed for domain:", domain)
+        return url
+      } catch (error) {
+        console.error("[v0] [AFFILIATE_SYSTEM] Error transforming URL:", error)
+        return url
+      }
+    }
+
+    const processAllResellers = (resellers: ResellerData[], affiliateCode: string | null): ResellerData[] => {
+      if (!affiliateCode) {
+        console.log("[v0] [AFFILIATE_SYSTEM] No affiliate code, returning original resellers")
+        return resellers
+      }
+
+      console.log(
+        "[v0] [AFFILIATE_SYSTEM] Processing",
+        resellers.length,
+        "resellers with affiliate code:",
+        affiliateCode,
+      )
+
+      return resellers.map((reseller) => ({
+        ...reseller,
+        durations: Object.fromEntries(
+          Object.entries(reseller.durations).map(([key, duration]) => [
+            key,
+            {
+              ...duration,
+              url: applyAffiliateTransformation(duration.url, affiliateCode),
+            },
+          ]),
+        ),
+      }))
+    }
+
+    return {
+      applyAffiliateTransformation,
+      processAllResellers,
+    }
+  })
 
   const handleLoadingComplete = () => {
     setShowLoading(false)
   }
 
-  // Platforms for Cryptic
-  const crypticPlatforms = ["windows", "macos", "ios", "android"]
-
   useEffect(() => {
-    const fetchAllProductData = async () => {
-      const newDynamicInfo: Record<string, { price: string; resellers: string }> = {}
+    const config = initializeAffiliate()
+    setAffiliateConfig(config)
+  }, [])
 
-      try {
-        console.log("[v0] Starting instant batch fetch for all products")
+  const fetchAllProductData = async () => {
+    const newDynamicInfo: Record<string, { price: string; resellers: string }> = {}
 
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 6000) // Reduced timeout for instant feel
+    try {
+      console.log("[v0] Starting instant batch fetch for all products")
 
-        const batchResponse = await fetch("/api/products/batch", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": "no-cache",
-          },
-          body: JSON.stringify({
-            products: PRODUCTS_LIST.map((p) => p.title),
-            timestamp: Date.now(),
-          }),
-          signal: controller.signal,
-        })
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 6000) // Reduced timeout for instant feel
 
-        clearTimeout(timeoutId)
+      const batchResponse = await fetch("/api/products/batch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
+        },
+        body: JSON.stringify({
+          products: PRODUCTS_LIST.map((p) => p.title),
+          timestamp: Date.now(),
+        }),
+        signal: controller.signal,
+      })
 
-        if (batchResponse.ok) {
-          const batchData = await batchResponse.json()
-          console.log("[v0] Batch fetch successful, processing", Object.keys(batchData).length, "products")
+      clearTimeout(timeoutId)
 
-          Object.entries(batchData).forEach(([productTitle, productData]: [string, any]) => {
-            if (productData && productData.resellers) {
-              let lowestPrice = Number.POSITIVE_INFINITY
-              let resellerCount = 0
+      if (batchResponse.ok) {
+        const batchData = await batchResponse.json()
+        console.log("[v0] Batch fetch successful, processing", Object.keys(batchData).length, "products")
 
-              Object.values(productData.resellers).forEach((resellerData: any) => {
-                if (resellerData.durations && Object.keys(resellerData.durations).length > 0) {
-                  resellerCount++
-                  Object.values(resellerData.durations).forEach((d: any) => {
-                    const price = parsePrice(d.price)
-                    if (!isNaN(price) && price < lowestPrice) {
-                      lowestPrice = price
-                    }
-                  })
-                }
-              })
+        Object.entries(batchData).forEach(([productTitle, productData]: [string, any]) => {
+          if (productData && productData.resellers) {
+            let lowestPrice = Number.POSITIVE_INFINITY
+            let resellerCount = 0
 
-              newDynamicInfo[productTitle] = {
-                price: lowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${lowestPrice.toFixed(2)}`,
-                resellers: resellerCount > 0 ? `${resellerCount}+ sellers` : "N/A",
-              }
-            }
-          })
-
-          setDynamicProductInfo(newDynamicInfo)
-          console.log("[v0] Batch processing complete, updated", Object.keys(newDynamicInfo).length, "products")
-          return // Early return to skip individual fetching when batch succeeds
-        } else {
-          console.log("[v0] Batch response not ok:", batchResponse.status, "falling back to individual fetching")
-        }
-      } catch (error) {
-        console.log("[v0] Batch fetch failed, falling back to individual fetching:", error)
-      }
-
-      console.log("[v0] Starting individual product fetching fallback")
-
-      const individualPromises = PRODUCTS_LIST.map(async (product) => {
-        if (product.title === "Cryptic") {
-          let overallLowestPrice = Number.POSITIVE_INFINITY
-          let totalResellerCount = 0
-          const uniqueResellers = new Set<string>()
-
-          const crypticPromises = crypticPlatforms.map(async (platform) => {
-            try {
-              const controller = new AbortController()
-              const timeoutId = setTimeout(() => controller.abort(), 4000)
-
-              const response = await fetch(`/api/products/cryptic-${platform}`, {
-                signal: controller.signal,
-                headers: { "Cache-Control": "no-cache" },
-              })
-
-              clearTimeout(timeoutId)
-
-              if (!response.ok) {
-                console.warn(`No data found for Cryptic ${platform}.`)
-                return
-              }
-
-              const data: ApiProductResellersResponse = await response.json()
-
-              Object.entries(data).forEach(([resellerName, resellerData]) => {
-                uniqueResellers.add(resellerName)
-                Object.values(resellerData.durations).forEach((d) => {
+            Object.values(productData.resellers).forEach((resellerData: any) => {
+              if (resellerData.durations && Object.keys(resellerData.durations).length > 0) {
+                resellerCount++
+                Object.values(resellerData.durations).forEach((d: any) => {
                   const price = parsePrice(d.price)
-                  if (!isNaN(price) && price < overallLowestPrice) {
-                    overallLowestPrice = price
+                  if (!isNaN(price) && price < lowestPrice) {
+                    lowestPrice = price
                   }
                 })
-              })
-            } catch (e) {
-              console.error(`Error fetching data for Cryptic ${platform}:`, e)
+              }
+            })
+
+            newDynamicInfo[productTitle] = {
+              price: lowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${lowestPrice.toFixed(2)}`,
+              resellers: resellerCount > 0 ? `${resellerCount}+ sellers` : "N/A",
             }
-          })
-
-          await Promise.allSettled(crypticPromises)
-          totalResellerCount = uniqueResellers.size
-
-          newDynamicInfo[product.title] = {
-            price: overallLowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${overallLowestPrice.toFixed(2)}`,
-            resellers: totalResellerCount > 0 ? `${totalResellerCount}+ sellers` : "N/A",
           }
-        } else {
+        })
+
+        setDynamicProductInfo(newDynamicInfo)
+        console.log("[v0] Batch processing complete, updated", Object.keys(newDynamicInfo).length, "products")
+        return // Early return to skip individual fetching when batch succeeds
+      } else {
+        console.log("[v0] Batch response not ok:", batchResponse.status, "falling back to individual fetching")
+      }
+    } catch (error) {
+      console.log("[v0] Batch fetch failed, falling back to individual fetching:", error)
+    }
+
+    console.log("[v0] Starting individual product fetching fallback")
+
+    const individualPromises = PRODUCTS_LIST.map(async (product) => {
+      if (product.title === "Cryptic") {
+        let overallLowestPrice = Number.POSITIVE_INFINITY
+        let totalResellerCount = 0
+        const uniqueResellers = new Set<string>()
+
+        const crypticPromises = ["windows", "macos", "ios", "android"].map(async (platform) => {
           try {
             const controller = new AbortController()
             const timeoutId = setTimeout(() => controller.abort(), 4000)
 
-            const response = await fetch(`/api/products/${product.title.toLowerCase()}`, {
+            const response = await fetch(`/api/products/cryptic-${platform}`, {
               signal: controller.signal,
               headers: { "Cache-Control": "no-cache" },
             })
@@ -235,45 +269,86 @@ export default function SelectionsPage() {
             clearTimeout(timeoutId)
 
             if (!response.ok) {
-              throw new Error(`Failed to fetch data for ${product.title}`)
+              console.warn(`No data found for Cryptic ${platform}.`)
+              return
             }
 
             const data: ApiProductResellersResponse = await response.json()
 
-            let lowestPrice = Number.POSITIVE_INFINITY
-            let resellerCount = 0
-
-            const validResellers = Object.values(data).filter((reseller) => Object.keys(reseller.durations).length > 0)
-            resellerCount = validResellers.length
-
-            validResellers.forEach((resellerData) => {
+            Object.entries(data).forEach(([resellerName, resellerData]) => {
+              uniqueResellers.add(resellerName)
               Object.values(resellerData.durations).forEach((d) => {
                 const price = parsePrice(d.price)
-                if (!isNaN(price) && price < lowestPrice) {
-                  lowestPrice = price
+                if (!isNaN(price) && price < overallLowestPrice) {
+                  overallLowestPrice = price
                 }
               })
             })
-
-            newDynamicInfo[product.title] = {
-              price: lowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${lowestPrice.toFixed(2)}`,
-              resellers: resellerCount > 0 ? `${resellerCount}+ sellers` : "N/A",
-            }
           } catch (e) {
-            console.error(`Error fetching data for ${product.title}:`, e)
-            newDynamicInfo[product.title] = {
-              price: "Unknown",
-              resellers: "N/A",
-            }
+            console.error(`Error fetching data for Cryptic ${platform}:`, e)
+          }
+        })
+
+        await Promise.allSettled(crypticPromises)
+        totalResellerCount = uniqueResellers.size
+
+        newDynamicInfo[product.title] = {
+          price: overallLowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${overallLowestPrice.toFixed(2)}`,
+          resellers: totalResellerCount > 0 ? `${totalResellerCount}+ sellers` : "N/A",
+        }
+      } else {
+        try {
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 4000)
+
+          const response = await fetch(`/api/products/${product.title.toLowerCase()}`, {
+            signal: controller.signal,
+            headers: { "Cache-Control": "no-cache" },
+          })
+
+          clearTimeout(timeoutId)
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch data for ${product.title}`)
+          }
+
+          const data: ApiProductResellersResponse = await response.json()
+
+          let lowestPrice = Number.POSITIVE_INFINITY
+          let resellerCount = 0
+
+          const validResellers = Object.values(data).filter((reseller) => Object.keys(reseller.durations).length > 0)
+          resellerCount = validResellers.length
+
+          validResellers.forEach((resellerData) => {
+            Object.values(resellerData.durations).forEach((d) => {
+              const price = parsePrice(d.price)
+              if (!isNaN(price) && price < lowestPrice) {
+                lowestPrice = price
+              }
+            })
+          })
+
+          newDynamicInfo[product.title] = {
+            price: lowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${lowestPrice.toFixed(2)}`,
+            resellers: resellerCount > 0 ? `${resellerCount}+ sellers` : "N/A",
+          }
+        } catch (e) {
+          console.error(`Error fetching data for ${product.title}:`, e)
+          newDynamicInfo[product.title] = {
+            price: "Unknown",
+            resellers: "N/A",
           }
         }
-      })
+      }
+    })
 
-      await Promise.allSettled(individualPromises)
-      setDynamicProductInfo(newDynamicInfo)
-      console.log("[v0] Individual fetching fallback complete")
-    }
+    await Promise.allSettled(individualPromises)
+    setDynamicProductInfo(newDynamicInfo)
+    console.log("[v0] Individual fetching fallback complete")
+  }
 
+  useEffect(() => {
     fetchAllProductData()
   }, [])
 
@@ -301,101 +376,138 @@ export default function SelectionsPage() {
     return visibleProducts.filter((product) => product.title.toLowerCase().includes(searchQuery.toLowerCase()))
   }, [searchQuery, visibleProducts])
 
-  const fetchProductResellers = useCallback(async (productTitle: string, platform?: string) => {
-    console.log("[v0] Starting fetch for:", productTitle, platform)
-    setFetchLoading(true)
-    setFetchError(null)
-    setFetchedResellers([]) // Clear previous resellers
+  const fetchProductResellers = useCallback(
+    async (productTitle: string, platform?: string) => {
+      console.log("[v0] Starting fetch for:", productTitle, platform)
+      setFetchLoading(true)
+      setFetchError(null)
+      setFetchedResellers([]) // Clear previous resellers
 
-    try {
-      let apiUrl = ""
-      if (productTitle === "Cryptic" && platform) {
-        apiUrl = `/api/products/cryptic-${platform}`
-      } else {
-        apiUrl = `/api/products/${productTitle.toLowerCase()}`
-      }
+      try {
+        let apiUrl = ""
+        if (productTitle === "Cryptic" && platform) {
+          apiUrl = `/api/products/cryptic-${platform}`
+        } else {
+          apiUrl = `/api/products/${productTitle.toLowerCase()}`
+        }
 
-      console.log("[v0] Fetching from:", apiUrl)
+        console.log("[v0] Fetching from:", apiUrl)
 
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 8000) // Reduced timeout for faster response
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 8000) // Reduced timeout for faster response
 
-      const response = await fetch(apiUrl, {
-        signal: controller.signal,
-        headers: {
-          "Cache-Control": "no-cache",
-          Accept: "application/json",
-        },
-      })
+        const response = await fetch(apiUrl, {
+          signal: controller.signal,
+          headers: {
+            "Cache-Control": "no-cache",
+            Accept: "application/json",
+          },
+        })
 
-      clearTimeout(timeoutId)
+        clearTimeout(timeoutId)
 
-      if (!response.ok) {
-        console.log("[v0] Response not ok:", response.status, response.statusText)
-        throw new Error(`Failed to fetch data from external API: ${response.statusText}`)
-      }
+        if (!response.ok) {
+          console.log("[v0] Response not ok:", response.status, response.statusText)
+          throw new Error(`Failed to fetch data from external API: ${response.statusText}`)
+        }
 
-      const data: ApiProductResellersResponse = await response.json()
-      console.log("[v0] Received data:", Object.keys(data).length, "resellers")
+        const data: ApiProductResellersResponse = await response.json()
+        console.log("[v0] Received data:", Object.keys(data).length, "resellers")
 
-      // Transform and calculate lowest price for sorting
-      const transformed: ResellerData[] = Object.entries(data).map(([resellerName, resellerData]) => {
-        let lowestPrice = Number.POSITIVE_INFINITY
-        const durations: ResellerData["durations"] = {}
+        // Transform and calculate lowest price for sorting
+        const transformed: ResellerData[] = Object.entries(data).map(([resellerName, resellerData]) => {
+          let lowestPrice = Number.POSITIVE_INFINITY
+          const durations: ResellerData["durations"] = {}
 
-        // Populate durations and find lowest price
-        if (resellerData.durations["1"]) durations.day1 = resellerData.durations["1"]
-        if (resellerData.durations["3"]) durations.day3 = resellerData.durations["3"]
-        if (resellerData.durations["7"]) durations.week1 = resellerData.durations["7"]
-        if (resellerData.durations["30"]) durations.month1 = resellerData.durations["30"]
-        if (resellerData.durations["365"]) durations.year1 = resellerData.durations["365"]
+          if (resellerData.durations["1"]) {
+            durations.day1 = {
+              ...resellerData.durations["1"],
+              url: AFFILIATE_SYSTEM.applyAffiliateTransformation(resellerData.durations["1"].url, affiliateConfig.code),
+            }
+          }
+          if (resellerData.durations["3"]) {
+            durations.day3 = {
+              ...resellerData.durations["3"],
+              url: AFFILIATE_SYSTEM.applyAffiliateTransformation(resellerData.durations["3"].url, affiliateConfig.code),
+            }
+          }
+          if (resellerData.durations["7"]) {
+            durations.week1 = {
+              ...resellerData.durations["7"],
+              url: AFFILIATE_SYSTEM.applyAffiliateTransformation(resellerData.durations["7"].url, affiliateConfig.code),
+            }
+          }
+          if (resellerData.durations["30"]) {
+            durations.month1 = {
+              ...resellerData.durations["30"],
+              url: AFFILIATE_SYSTEM.applyAffiliateTransformation(
+                resellerData.durations["30"].url,
+                affiliateConfig.code,
+              ),
+            }
+          }
+          if (resellerData.durations["365"]) {
+            durations.year1 = {
+              ...resellerData.durations["365"],
+              url: AFFILIATE_SYSTEM.applyAffiliateTransformation(
+                resellerData.durations["365"].url,
+                affiliateConfig.code,
+              ),
+            }
+          }
 
-        Object.values(resellerData.durations).forEach((d) => {
-          const price = parsePrice(d.price)
-          if (!isNaN(price) && price < lowestPrice) {
-            lowestPrice = price
+          Object.values(resellerData.durations).forEach((d) => {
+            const price = parsePrice(d.price)
+            if (!isNaN(price) && price < lowestPrice) {
+              lowestPrice = price
+            }
+          })
+
+          return {
+            name: resellerName,
+            payments: resellerData.payments,
+            durations,
+            lowestPrice: lowestPrice === Number.POSITIVE_INFINITY ? 0 : lowestPrice,
+            isPremium: resellerData.premium || false,
+            pfpUrl: resellerData.pfp && resellerData.pfp !== "" ? resellerData.pfp : "/images/key-empire-logo.png",
+            isVerified: resellerData.verified || false,
           }
         })
 
-        return {
-          name: resellerName,
-          payments: resellerData.payments,
-          durations,
-          lowestPrice: lowestPrice === Number.POSITIVE_INFINITY ? 0 : lowestPrice,
-          isPremium: resellerData.premium || false,
-          pfpUrl: resellerData.pfp && resellerData.pfp !== "" ? resellerData.pfp : "/images/key-empire-logo.png",
-          isVerified: resellerData.verified || false,
+        transformed.sort((a, b) => {
+          // Verified resellers always come first
+          if (a.isVerified && !b.isVerified) return -1
+          if (!a.isVerified && b.isVerified) return 1
+          // If both are verified or both are not verified, sort by price
+          return a.lowestPrice - b.lowestPrice
+        })
+
+        console.log("[v0] Transformed resellers:", transformed.length)
+        if (affiliateConfig.isActive) {
+          console.log("[v0] [AFFILIATE_SYSTEM] Applied affiliate transformations with code:", affiliateConfig.code)
         }
-      })
 
-      transformed.sort((a, b) => {
-        // Verified resellers always come first
-        if (a.isVerified && !b.isVerified) return -1
-        if (!a.isVerified && b.isVerified) return 1
-        // If both are verified or both are not verified, sort by price
-        return a.lowestPrice - b.lowestPrice
-      })
-
-      console.log("[v0] Transformed resellers:", transformed.length)
-
-      if (transformed.length === 0 || transformed.every((r) => Object.keys(r.durations).length === 0)) {
-        console.log("[v0] No valid resellers found")
-        setFetchError("Resellers are not found for this product or platform.")
-      } else {
-        console.log("[v0] Setting resellers:", transformed.length)
-        setFetchedResellers(transformed)
+        if (transformed.length === 0 || transformed.every((r) => Object.keys(r.durations).length === 0)) {
+          console.log("[v0] No valid resellers found")
+          setFetchError("Resellers are not found for this product or platform.")
+        } else {
+          console.log("[v0] Setting resellers:", transformed.length)
+          const finalResellers = AFFILIATE_SYSTEM.processAllResellers(transformed, affiliateConfig.code)
+          setFetchedResellers(finalResellers)
+        }
+      } catch (e: any) {
+        console.error("[v0] Error fetching product resellers:", e)
+        if (e.name === "AbortError") {
+          setFetchError("Request timed out. Please try again.")
+        } else {
+          setFetchError("Resellers are not found for this product or platform.")
+        }
+      } finally {
+        setFetchLoading(false)
       }
-    } catch (e: any) {
-      console.error("[v0] Error fetching product resellers:", e)
-      if (e.name === "AbortError") {
-        setFetchError("Request timed out. Please try again.")
-      } else {
-        setFetchError("Resellers are not found for this product or platform.")
-      }
-    } finally {
-      setFetchLoading(false)
-    }
-  }, [])
+    },
+    [affiliateConfig, AFFILIATE_SYSTEM], // Added AFFILIATE_SYSTEM as dependency
+  )
 
   // Handle product selection (including opening Cryptic modal)
   const handleProductSelect = (productTitle: string) => {
@@ -525,6 +637,17 @@ export default function SelectionsPage() {
     },
     [paginationData.totalPages],
   )
+
+  useEffect(() => {
+    if (fetchedResellers.length > 0 && affiliateConfig.code) {
+      console.log(
+        "[v0] [AFFILIATE_SYSTEM] Re-processing existing resellers with new affiliate code:",
+        affiliateConfig.code,
+      )
+      const reprocessedResellers = AFFILIATE_SYSTEM.processAllResellers(fetchedResellers, affiliateConfig.code)
+      setFetchedResellers(reprocessedResellers)
+    }
+  }, [affiliateConfig.code, AFFILIATE_SYSTEM])
 
   return (
     <div
