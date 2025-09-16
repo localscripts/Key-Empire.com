@@ -3,7 +3,33 @@ export interface AffiliateConfig {
   isActive: boolean
 }
 
-// Get affiliate code from URL or localStorage
+// Cookie utilities for affiliate code management
+const AFFILIATE_COOKIE_NAME = "affiliate_code"
+const COOKIE_EXPIRY_HOURS = 1
+
+const setCookie = (name: string, value: string, hours: number): void => {
+  if (typeof document === "undefined") return
+
+  const expires = new Date()
+  expires.setTime(expires.getTime() + hours * 60 * 60 * 1000)
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`
+}
+
+const getCookie = (name: string): string | null => {
+  if (typeof document === "undefined") return null
+
+  const nameEQ = name + "="
+  const ca = document.cookie.split(";")
+
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i]
+    while (c.charAt(0) === " ") c = c.substring(1, c.length)
+    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length)
+  }
+  return null
+}
+
+// Get affiliate code from URL or cookies
 export const getAffiliateCode = (): string | null => {
   if (typeof window === "undefined") return null
 
@@ -12,13 +38,25 @@ export const getAffiliateCode = (): string | null => {
   const urlCode = urlParams.get("affiliate") || urlParams.get("ref")
 
   if (urlCode) {
-    // Store in localStorage for persistence
-    localStorage.setItem("affiliate_code", urlCode)
+    // Store in cookie for site-wide persistence
+    setCookie(AFFILIATE_COOKIE_NAME, urlCode, COOKIE_EXPIRY_HOURS)
+    console.log("[v0] Affiliate code stored in cookie:", urlCode)
     return urlCode
   }
 
-  // Check localStorage for existing code
-  return localStorage.getItem("affiliate_code")
+  // Check cookie for existing code
+  const cookieCode = getCookie(AFFILIATE_COOKIE_NAME)
+  if (cookieCode) {
+    console.log("[v0] Affiliate code retrieved from cookie:", cookieCode)
+  }
+
+  return cookieCode
+}
+
+// Set affiliate code in cookie
+export const setAffiliateCode = (code: string): void => {
+  setCookie(AFFILIATE_COOKIE_NAME, code, COOKIE_EXPIRY_HOURS)
+  console.log("[v0] Affiliate code set in cookie:", code)
 }
 
 // Transform reseller URL based on affiliate code
@@ -29,26 +67,36 @@ export const transformAffiliateUrl = (originalUrl: string, affiliateCode: string
     const url = new URL(originalUrl)
     const hostname = url.hostname.toLowerCase()
 
+    console.log("[v0] Transforming URL for affiliate:", affiliateCode, "Original:", originalUrl)
+
     // Transform based on specific reseller domains
     if (hostname.includes("robloxcheatz.com")) {
       // https://robloxcheatz.com/group/wave → https://robloxcheatz.com/affiliate/(affiliate_code)
-      return `https://robloxcheatz.com/affiliate/${affiliateCode}`
+      const transformedUrl = `https://robloxcheatz.com/affiliate/${affiliateCode}`
+      console.log("[v0] RobloxCheatz transformed:", transformedUrl)
+      return transformedUrl
     }
 
     if (hostname.includes("cheapkeyz.store")) {
       // https://cheapkeyz.store/group/valex → https://cheapkeyz.store/affiliate/(affiliate_code)
-      return `https://cheapkeyz.store/affiliate/${affiliateCode}`
+      const transformedUrl = `https://cheapkeyz.store/affiliate/${affiliateCode}`
+      console.log("[v0] CheapKeyz transformed:", transformedUrl)
+      return transformedUrl
     }
 
     if (hostname.includes("bloxproducts.com")) {
       // https://bloxproducts.com/#Zenith → https://bloxproducts.com/?affiliate_key={affiliate_code}#Zenith
       const hash = url.hash
-      return `https://bloxproducts.com/?affiliate_key=${affiliateCode}${hash}`
+      const transformedUrl = `https://bloxproducts.com/?affiliate_key=${affiliateCode}${hash}`
+      console.log("[v0] BloxProducts transformed:", transformedUrl)
+      return transformedUrl
     }
 
     // For other domains, append as query parameter
     url.searchParams.set("ref", affiliateCode)
-    return url.toString()
+    const transformedUrl = url.toString()
+    console.log("[v0] Generic affiliate transformation:", transformedUrl)
+    return transformedUrl
   } catch (error) {
     console.error("[v0] Error transforming affiliate URL:", error)
     return originalUrl
@@ -61,6 +109,8 @@ export const initializeAffiliate = (): AffiliateConfig => {
 
   if (code) {
     console.log("[v0] Affiliate system active with code:", code)
+  } else {
+    console.log("[v0] No affiliate code found")
   }
 
   return {
@@ -75,9 +125,9 @@ export const handleAffiliateClick = (originalUrl: string): void => {
   const finalUrl = affiliateCode ? transformAffiliateUrl(originalUrl, affiliateCode) : originalUrl
 
   if (affiliateCode) {
-    console.log("[v0] Transforming URL with affiliate code:", affiliateCode)
-    console.log("[v0] Original:", originalUrl)
-    console.log("[v0] Transformed:", finalUrl)
+    console.log("[v0] Opening affiliate URL:", finalUrl)
+  } else {
+    console.log("[v0] Opening original URL (no affiliate):", finalUrl)
   }
 
   window.open(finalUrl, "_blank")
