@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { getAffiliateApiUrl } from "@/lib/affiliate"
 
 interface BatchRequest {
   products: string[]
@@ -29,6 +30,9 @@ export async function POST(request: NextRequest) {
     const body: BatchRequest = await request.json()
     const { products } = body
 
+    const { searchParams } = new URL(request.url)
+    const affiliateCode = searchParams.get("affiliate")
+
     if (!products || !Array.isArray(products) || products.length === 0) {
       return new NextResponse(JSON.stringify({ error: "Invalid request: products array is required" }), {
         status: 400,
@@ -36,7 +40,13 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    console.log("Batch fetch requested for:", products.length, "products")
+    console.log(
+      "[v0] [PHP_AFFILIATE] Batch fetch requested for:",
+      products.length,
+      "products",
+      "with affiliate:",
+      affiliateCode,
+    )
 
     const batchResults: Record<string, ApiProductResellersResponse> = {}
     const fetchPromises = products.map(async (productTitle) => {
@@ -51,9 +61,15 @@ export async function POST(request: NextRequest) {
               const controller = new AbortController()
               const timeoutId = setTimeout(() => controller.abort(), 5000)
 
-              const response = await fetch(`https://api.voxlis.net/products/cryptic-${platform}.json`, {
+              const baseApiUrl = `https://api.voxlis.net/resellers/cryptic-${platform}`
+              const apiUrl = getAffiliateApiUrl(baseApiUrl, affiliateCode || undefined)
+
+              const response = await fetch(apiUrl, {
                 signal: controller.signal,
-                headers: { "Cache-Control": "no-cache" },
+                headers: {
+                  "Cache-Control": "no-cache",
+                  "User-Agent": "KeyEmpire-Frontend/1.0",
+                },
               })
 
               clearTimeout(timeoutId)
@@ -74,20 +90,25 @@ export async function POST(request: NextRequest) {
                 })
               }
             } catch (error) {
-              console.log(`Failed to fetch Cryptic ${platform}:`, error)
+              console.log(`[v0] [PHP_AFFILIATE] Failed to fetch Cryptic ${platform}:`, error)
             }
           })
 
           await Promise.allSettled(platformPromises)
           batchResults[productTitle] = { resellers: crypticResults }
         } else {
-          // Regular product fetch
           const controller = new AbortController()
           const timeoutId = setTimeout(() => controller.abort(), 5000)
 
-          const response = await fetch(`https://api.voxlis.net/products/${productTitle.toLowerCase()}.json`, {
+          const baseApiUrl = `https://api.voxlis.net/resellers/${productTitle.toLowerCase()}`
+          const apiUrl = getAffiliateApiUrl(baseApiUrl, affiliateCode || undefined)
+
+          const response = await fetch(apiUrl, {
             signal: controller.signal,
-            headers: { "Cache-Control": "no-cache" },
+            headers: {
+              "Cache-Control": "no-cache",
+              "User-Agent": "KeyEmpire-Frontend/1.0",
+            },
           })
 
           clearTimeout(timeoutId)
@@ -96,12 +117,12 @@ export async function POST(request: NextRequest) {
             const data = await response.json()
             batchResults[productTitle] = { resellers: data }
           } else {
-            console.log(`Failed to fetch ${productTitle}:`, response.status)
+            console.log(`[v0] [PHP_AFFILIATE] Failed to fetch ${productTitle}:`, response.status)
             batchResults[productTitle] = { resellers: {} }
           }
         }
       } catch (error) {
-        console.log(`Error fetching ${productTitle}:`, error)
+        console.log(`[v0] [PHP_AFFILIATE] Error fetching ${productTitle}:`, error)
         batchResults[productTitle] = { resellers: {} }
       }
     })
@@ -113,10 +134,10 @@ export async function POST(request: NextRequest) {
     try {
       await Promise.race([Promise.allSettled(fetchPromises), globalTimeout])
     } catch (error) {
-      console.log("Batch request timed out, returning partial results")
+      console.log("[v0] [PHP_AFFILIATE] Batch request timed out, returning partial results")
     }
 
-    console.log("Batch fetch completed for", Object.keys(batchResults).length, "products")
+    console.log("[v0] [PHP_AFFILIATE] Batch fetch completed for", Object.keys(batchResults).length, "products")
 
     return NextResponse.json(batchResults, {
       headers: {
@@ -125,7 +146,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error: any) {
-    console.error("Error in batch API route:", error)
+    console.error("[v0] [PHP_AFFILIATE] Error in batch API route:", error)
     return new NextResponse(JSON.stringify({ error: "Internal Server Error", details: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
