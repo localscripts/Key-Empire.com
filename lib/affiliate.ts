@@ -59,47 +59,19 @@ export const setAffiliateCode = (code: string): void => {
   console.log("[v0] Affiliate code set in cookie:", code)
 }
 
-// Transform reseller URL based on affiliate code
-export const transformAffiliateUrl = (originalUrl: string, affiliateCode: string): string => {
-  if (!affiliateCode || !originalUrl) return originalUrl
+// Create API URL with affiliate parameter for PHP processing
+export const getAffiliateApiUrl = (baseUrl: string, affiliateCode?: string): string => {
+  if (!affiliateCode) return baseUrl
 
   try {
-    const url = new URL(originalUrl)
-    const hostname = url.hostname.toLowerCase()
-
-    console.log("[v0] Transforming URL for affiliate:", affiliateCode, "Original:", originalUrl)
-
-    // Transform based on specific reseller domains
-    if (hostname.includes("robloxcheatz.com")) {
-      // https://robloxcheatz.com/group/wave → https://robloxcheatz.com/affiliate/(affiliate_code)
-      const transformedUrl = `https://robloxcheatz.com/affiliate/${affiliateCode}`
-      console.log("[v0] RobloxCheatz transformed:", transformedUrl)
-      return transformedUrl
-    }
-
-    if (hostname.includes("cheapkeyz.store")) {
-      // https://cheapkeyz.store/group/valex → https://cheapkeyz.store/affiliate/(affiliate_code)
-      const transformedUrl = `https://cheapkeyz.store/affiliate/${affiliateCode}`
-      console.log("[v0] CheapKeyz transformed:", transformedUrl)
-      return transformedUrl
-    }
-
-    if (hostname.includes("bloxproducts.com")) {
-      // https://bloxproducts.com/#Zenith → https://bloxproducts.com/?affiliate_key={affiliate_code}#Zenith
-      const hash = url.hash
-      const transformedUrl = `https://bloxproducts.com/?affiliate_key=${affiliateCode}${hash}`
-      console.log("[v0] BloxProducts transformed:", transformedUrl)
-      return transformedUrl
-    }
-
-    // For other domains, append as query parameter
-    url.searchParams.set("ref", affiliateCode)
-    const transformedUrl = url.toString()
-    console.log("[v0] Generic affiliate transformation:", transformedUrl)
-    return transformedUrl
+    const url = new URL(baseUrl)
+    url.searchParams.set("affiliate", affiliateCode)
+    const affiliateUrl = url.toString()
+    console.log("[v0] API URL with affiliate code:", affiliateUrl)
+    return affiliateUrl
   } catch (error) {
-    console.error("[v0] Error transforming affiliate URL:", error)
-    return originalUrl
+    console.error("[v0] Error creating affiliate API URL:", error)
+    return baseUrl
   }
 }
 
@@ -119,16 +91,7 @@ export const initializeAffiliate = (): AffiliateConfig => {
   }
 }
 
-// Handle affiliate link clicks
-export const handleAffiliateClick = (originalUrl: string): void => {
-  const affiliateCode = getAffiliateCode()
-  const finalUrl = affiliateCode ? transformAffiliateUrl(originalUrl, affiliateCode) : originalUrl
-
-  if (affiliateCode) {
-    console.log("[v0] Opening affiliate URL:", finalUrl)
-  } else {
-    console.log("[v0] Opening original URL (no affiliate):", finalUrl)
-  }
-
-  window.open(finalUrl, "_blank")
+export const handleAffiliateClick = (url: string): void => {
+  console.log("[v0] Opening URL (pre-transformed by PHP):", url)
+  window.open(url, "_blank")
 }
