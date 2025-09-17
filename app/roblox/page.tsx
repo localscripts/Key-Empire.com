@@ -106,86 +106,6 @@ export default function SelectionsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [affiliateConfig, setAffiliateConfig] = useState<AffiliateConfig>({ code: null, isActive: false })
 
-  const [AFFILIATE_SYSTEM] = useState(() => {
-    const applyAffiliateTransformation = (url: string, affiliateCode: string | null): string => {
-      if (!affiliateCode || !url) return url
-
-      try {
-        const urlObj = new URL(url)
-        const domain = urlObj.hostname.toLowerCase()
-
-        console.log("[v0] [AFFILIATE_SYSTEM] Transforming URL:", url, "with code:", affiliateCode)
-
-        // Transform based on domain
-        if (domain.includes("robloxcheatz.com")) {
-          const transformedUrl = `https://robloxcheatz.com/affiliate/${affiliateCode}`
-          console.log("[v0] [AFFILIATE_SYSTEM] Transformed robloxcheatz.com:", transformedUrl)
-          return transformedUrl
-        }
-
-        if (domain.includes("cheapkeyz.store")) {
-          const transformedUrl = `https://cheapkeyz.store/affiliate/${affiliateCode}`
-          console.log("[v0] [AFFILIATE_SYSTEM] Transformed cheapkeyz.store:", transformedUrl)
-          return transformedUrl
-        }
-
-        if (domain.includes("bloxproducts.com")) {
-          const hash = urlObj.hash
-          const transformedUrl = `https://bloxproducts.com/?affiliate_key=${affiliateCode}${hash}`
-          console.log("[v0] [AFFILIATE_SYSTEM] Transformed bloxproducts.com:", transformedUrl)
-          return transformedUrl
-        }
-
-        console.log("[v0] [AFFILIATE_SYSTEM] No transformation needed for domain:", domain)
-        return url
-      } catch (error) {
-        console.error("[v0] [AFFILIATE_SYSTEM] Error transforming URL:", error)
-        return url
-      }
-    }
-
-    const processAllResellers = (resellers: ResellerData[], affiliateCode: string | null): ResellerData[] => {
-      if (!affiliateCode) {
-        console.log("[v0] [AFFILIATE_SYSTEM] No affiliate code, returning original resellers")
-        return resellers
-      }
-
-      console.log(
-        "[v0] [AFFILIATE_SYSTEM] Processing",
-        resellers.length,
-        "resellers with affiliate code:",
-        affiliateCode,
-      )
-
-      return resellers.map((reseller) => ({
-        ...reseller,
-        durations: Object.fromEntries(
-          Object.entries(reseller.durations).map(([key, duration]) => [
-            key,
-            {
-              ...duration,
-              url: applyAffiliateTransformation(duration.url, affiliateCode),
-            },
-          ]),
-        ),
-      }))
-    }
-
-    return {
-      applyAffiliateTransformation,
-      processAllResellers,
-    }
-  })
-
-  const handleLoadingComplete = () => {
-    setShowLoading(false)
-  }
-
-  useEffect(() => {
-    const config = initializeAffiliate()
-    setAffiliateConfig(config)
-  }, [])
-
   const fetchAllProductData = async () => {
     const newDynamicInfo: Record<string, { price: string; resellers: string }> = {}
 
@@ -195,7 +115,13 @@ export default function SelectionsPage() {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 6000) // Reduced timeout for instant feel
 
-      const batchResponse = await fetch("/api/products/batch", {
+      let batchUrl = "/api/products/batch"
+      if (affiliateConfig.code) {
+        batchUrl += `?affiliate=${encodeURIComponent(affiliateConfig.code)}`
+        console.log("[v0] [PHP_AFFILIATE] Using affiliate batch URL:", batchUrl)
+      }
+
+      const batchResponse = await fetch(batchUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -391,10 +317,17 @@ export default function SelectionsPage() {
           apiUrl = `/api/products/${productTitle.toLowerCase()}`
         }
 
+        if (affiliateConfig.code) {
+          const url = new URL(apiUrl, window.location.origin)
+          url.searchParams.set("affiliate", affiliateConfig.code)
+          apiUrl = url.pathname + url.search
+          console.log("[v0] [PHP_AFFILIATE] Using affiliate API URL:", apiUrl)
+        }
+
         console.log("[v0] Fetching from:", apiUrl)
 
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 8000) // Reduced timeout for faster response
+        const timeoutId = setTimeout(() => controller.abort(), 8000)
 
         const response = await fetch(apiUrl, {
           signal: controller.signal,
@@ -414,46 +347,25 @@ export default function SelectionsPage() {
         const data: ApiProductResellersResponse = await response.json()
         console.log("[v0] Received data:", Object.keys(data).length, "resellers")
 
-        // Transform and calculate lowest price for sorting
         const transformed: ResellerData[] = Object.entries(data).map(([resellerName, resellerData]) => {
           let lowestPrice = Number.POSITIVE_INFINITY
           const durations: ResellerData["durations"] = {}
 
+          // URLs are already transformed by PHP API, no need for client-side transformation
           if (resellerData.durations["1"]) {
-            durations.day1 = {
-              ...resellerData.durations["1"],
-              url: AFFILIATE_SYSTEM.applyAffiliateTransformation(resellerData.durations["1"].url, affiliateConfig.code),
-            }
+            durations.day1 = resellerData.durations["1"]
           }
           if (resellerData.durations["3"]) {
-            durations.day3 = {
-              ...resellerData.durations["3"],
-              url: AFFILIATE_SYSTEM.applyAffiliateTransformation(resellerData.durations["3"].url, affiliateConfig.code),
-            }
+            durations.day3 = resellerData.durations["3"]
           }
           if (resellerData.durations["7"]) {
-            durations.week1 = {
-              ...resellerData.durations["7"],
-              url: AFFILIATE_SYSTEM.applyAffiliateTransformation(resellerData.durations["7"].url, affiliateConfig.code),
-            }
+            durations.week1 = resellerData.durations["7"]
           }
           if (resellerData.durations["30"]) {
-            durations.month1 = {
-              ...resellerData.durations["30"],
-              url: AFFILIATE_SYSTEM.applyAffiliateTransformation(
-                resellerData.durations["30"].url,
-                affiliateConfig.code,
-              ),
-            }
+            durations.month1 = resellerData.durations["30"]
           }
           if (resellerData.durations["365"]) {
-            durations.year1 = {
-              ...resellerData.durations["365"],
-              url: AFFILIATE_SYSTEM.applyAffiliateTransformation(
-                resellerData.durations["365"].url,
-                affiliateConfig.code,
-              ),
-            }
+            durations.year1 = resellerData.durations["365"]
           }
 
           Object.values(resellerData.durations).forEach((d) => {
@@ -484,7 +396,7 @@ export default function SelectionsPage() {
 
         console.log("[v0] Transformed resellers:", transformed.length)
         if (affiliateConfig.isActive) {
-          console.log("[v0] [AFFILIATE_SYSTEM] Applied affiliate transformations with code:", affiliateConfig.code)
+          console.log("[v0] [PHP_AFFILIATE] Reseller URLs pre-transformed by PHP API with code:", affiliateConfig.code)
         }
 
         if (transformed.length === 0 || transformed.every((r) => Object.keys(r.durations).length === 0)) {
@@ -492,8 +404,7 @@ export default function SelectionsPage() {
           setFetchError("Resellers are not found for this product or platform.")
         } else {
           console.log("[v0] Setting resellers:", transformed.length)
-          const finalResellers = AFFILIATE_SYSTEM.processAllResellers(transformed, affiliateConfig.code)
-          setFetchedResellers(finalResellers)
+          setFetchedResellers(transformed)
         }
       } catch (e: any) {
         console.error("[v0] Error fetching product resellers:", e)
@@ -506,7 +417,7 @@ export default function SelectionsPage() {
         setFetchLoading(false)
       }
     },
-    [affiliateConfig, AFFILIATE_SYSTEM], // Added AFFILIATE_SYSTEM as dependency
+    [affiliateConfig], // Simplified dependencies since PHP handles transformation
   )
 
   // Handle product selection (including opening Cryptic modal)
@@ -639,15 +550,9 @@ export default function SelectionsPage() {
   )
 
   useEffect(() => {
-    if (fetchedResellers.length > 0 && affiliateConfig.code) {
-      console.log(
-        "[v0] [AFFILIATE_SYSTEM] Re-processing existing resellers with new affiliate code:",
-        affiliateConfig.code,
-      )
-      const reprocessedResellers = AFFILIATE_SYSTEM.processAllResellers(fetchedResellers, affiliateConfig.code)
-      setFetchedResellers(reprocessedResellers)
-    }
-  }, [affiliateConfig.code, AFFILIATE_SYSTEM])
+    const config = initializeAffiliate()
+    setAffiliateConfig(config)
+  }, [])
 
   return (
     <div
@@ -663,7 +568,7 @@ export default function SelectionsPage() {
       {/* Animated Background Bubbles */}
       <AnimatedBackground />
 
-      {showLoading && <LoadingScreen onLoadingComplete={handleLoadingComplete} />}
+      {showLoading && <LoadingScreen />}
       <Navbar />
 
       <main className="px-4 py-8 mt-40 relative z-10 md:mt-32">
