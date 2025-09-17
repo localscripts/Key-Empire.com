@@ -351,7 +351,6 @@ export default function SelectionsPage() {
           let lowestPrice = Number.POSITIVE_INFINITY
           const durations: ResellerData["durations"] = {}
 
-          // URLs are already transformed by PHP API, no need for client-side transformation
           if (resellerData.durations["1"]) {
             durations.day1 = resellerData.durations["1"]
           }
@@ -396,7 +395,10 @@ export default function SelectionsPage() {
 
         console.log("[v0] Transformed resellers:", transformed.length)
         if (affiliateConfig.isActive) {
-          console.log("[v0] [PHP_AFFILIATE] Reseller URLs pre-transformed by PHP API with code:", affiliateConfig.code)
+          console.log(
+            "[v0] [PHP_AFFILIATE] All reseller URLs pre-transformed by PHP API with affiliate code:",
+            affiliateConfig.code,
+          )
         }
 
         if (transformed.length === 0 || transformed.every((r) => Object.keys(r.durations).length === 0)) {
@@ -417,7 +419,7 @@ export default function SelectionsPage() {
         setFetchLoading(false)
       }
     },
-    [affiliateConfig], // Simplified dependencies since PHP handles transformation
+    [affiliateConfig], // Simplified dependencies - PHP handles all transformations
   )
 
   // Handle product selection (including opening Cryptic modal)
