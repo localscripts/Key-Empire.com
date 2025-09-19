@@ -29,7 +29,7 @@ export const AFFILIATE_CONFIG = {
     {
       name: "CheapKeyz",
       domains: ["cheapkeyz.store"],
-      defaultAffiliate: "voxlisnet",
+      defaultAffiliate: "voxlis",
       pattern: {
         type: "path" as const,
         pattern: "/affiliate/{code}",
@@ -39,7 +39,7 @@ export const AFFILIATE_CONFIG = {
     {
       name: "BloxProducts",
       domains: ["bloxproducts.com"],
-      defaultAffiliate: "voxlisnet",
+      defaultAffiliate: "1270744029168009258",
       pattern: {
         type: "query" as const,
         param: "affiliate_key",
