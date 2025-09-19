@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { affiliateHandler } from "@/lib/services/affiliate-handler"
+import { AffiliateManager } from "@/lib/affiliate-utils"
 
 interface DurationPricing {
   price: string
@@ -55,6 +56,12 @@ export default function ResellersModal({
   const [isClosing, setIsClosing] = useState(false)
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null)
   const [showPaymentsTooltip, setShowPaymentsTooltip] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      new AffiliateManager()
+    }
+  }, [])
 
   const getAvailableDurations = () => {
     const availableDurations = new Set<string>()
