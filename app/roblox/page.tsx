@@ -121,9 +121,6 @@ export default function SelectionsPage() {
       const newDynamicInfo: Record<string, { price: string; resellers: string }> = {}
 
       try {
-        console.log("[v0] === STARTING RESELLER COUNT CALCULATION ===")
-        console.log("[v0] Starting local batch fetch for all products with affiliate:", affiliateCode)
-
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 10000) // Increased timeout
 
@@ -140,24 +137,17 @@ export default function SelectionsPage() {
 
         if (batchResponse.ok) {
           const batchData = await batchResponse.json()
-          console.log("[v0] === BATCH DATA RECEIVED ===")
-          console.log("[v0] Total products in batch:", Object.keys(batchData).length)
-          console.log("[v0] Product names:", Object.keys(batchData))
 
           const productNameMapping: Record<string, string> = {}
           PRODUCTS_LIST.forEach((product) => {
             productNameMapping[product.title.toLowerCase()] = product.title
           })
-          console.log("[v0] Product name mapping:", productNameMapping)
 
           Object.entries(batchData).forEach(([productKey, productData]: [string, any]) => {
-            console.log(`[v0] === PROCESSING PRODUCT: ${productKey} ===`)
 
             const displayName = productNameMapping[productKey] || productKey
-            console.log(`[v0] Mapped "${productKey}" to display name: "${displayName}"`)
 
             if (!productData || typeof productData !== "object") {
-              console.log(`[v0] Invalid product data for ${productKey}`)
               return
             }
 
@@ -165,25 +155,19 @@ export default function SelectionsPage() {
             const uniqueResellerNames = new Set<string>()
             const resellerKeys = Object.keys(productData)
 
-            console.log(`[v0] Product ${productKey} has ${resellerKeys.length} reseller entries`)
-            console.log(`[v0] Reseller keys:`, resellerKeys)
 
             resellerKeys.forEach((resellerKey, index) => {
               const resellerData = productData[resellerKey]
-              console.log(`[v0] Processing reseller ${index + 1}/${resellerKeys.length}: ${resellerKey}`)
 
               if (!resellerData || typeof resellerData !== "object") {
-                console.log(`[v0] Invalid reseller data for ${resellerKey}`)
                 return
               }
 
               if (!resellerData.durations || typeof resellerData.durations !== "object") {
-                console.log(`[v0] No durations found for ${resellerKey}`)
                 return
               }
 
               const durationsCount = Object.keys(resellerData.durations).length
-              console.log(`[v0] Reseller ${resellerKey} has ${durationsCount} durations`)
 
               if (durationsCount > 0) {
                 // Extract reseller name more reliably
@@ -191,32 +175,22 @@ export default function SelectionsPage() {
                 const wasNew = !uniqueResellerNames.has(resellerName)
                 uniqueResellerNames.add(resellerName)
 
-                console.log(`[v0] Reseller name: "${resellerName}" (${wasNew ? "NEW" : "DUPLICATE"})`)
 
                 // Calculate lowest price
                 Object.entries(resellerData.durations).forEach(([durationKey, duration]: [string, any]) => {
                   if (duration && duration.price) {
                     const price = parsePrice(duration.price)
-                    console.log(`[v0] Duration ${durationKey}: ${duration.price} -> ${price}`)
                     if (!isNaN(price) && price < lowestPrice) {
                       lowestPrice = price
                     }
                   }
                 })
               } else {
-                console.log(`[v0] Skipping reseller ${resellerKey} - no valid durations`)
               }
             })
 
             const finalResellerCount = uniqueResellerNames.size
             const uniqueResellersList = Array.from(uniqueResellerNames)
-
-            console.log(`[v0] === FINAL RESULTS FOR ${productKey} (${displayName}) ===`)
-            console.log(`[v0] Unique resellers found: ${finalResellerCount}`)
-            console.log(`[v0] Reseller names:`, uniqueResellersList)
-            console.log(
-              `[v0] Lowest price: ${lowestPrice === Number.POSITIVE_INFINITY ? "None" : `$${lowestPrice.toFixed(2)}`}`,
-            )
 
             let displayCount: string
             if (finalResellerCount === 0) {
@@ -232,40 +206,26 @@ export default function SelectionsPage() {
               resellers: displayCount,
             }
 
-            console.log(`[v0] Set ${displayName} resellers to: "${displayCount}" (actual count: ${finalResellerCount})`)
           })
 
-          console.log("[v0] === FINAL DYNAMIC INFO ===")
           Object.entries(newDynamicInfo).forEach(([product, info]) => {
-            console.log(`[v0] ${product}: ${info.resellers} resellers, ${info.price}`)
           })
 
-          console.log("[v0] === UPDATING STATE ===")
-          console.log("[v0] Previous dynamicProductInfo:", dynamicProductInfo)
-          console.log("[v0] New dynamicProductInfo:", newDynamicInfo)
 
           setDynamicProductInfo(newDynamicInfo)
           setForceUpdate((prev) => prev + 1)
 
           setTimeout(() => {
-            console.log("[v0] === STATE UPDATE VERIFICATION ===")
-            console.log("[v0] Force update counter:", forceUpdate + 1)
-            console.log("[v0] Dynamic info keys:", Object.keys(newDynamicInfo))
             Object.entries(newDynamicInfo).forEach(([product, info]) => {
-              console.log(`[v0] ${product} should show: ${info.resellers} resellers`)
             })
           }, 100)
 
-          console.log("[v0] === RESELLER COUNT CALCULATION COMPLETE ===")
           return
         } else {
-          console.log("[v0] Batch response not ok:", batchResponse.status, "falling back to individual fetching")
         }
       } catch (error) {
-        console.error("[v0] Error in batch fetch:", error)
       }
 
-      console.log("[v0] Starting individual product fetching fallback")
 
       const individualPromises = PRODUCTS_LIST.map(async (product) => {
         if (product.title === "Cryptic") {
@@ -449,7 +409,6 @@ export default function SelectionsPage() {
           apiUrl = `/api/products/${productTitle.toLowerCase()}?affiliate=${affiliateCode}`
         }
 
-        console.log("[v0] Fetching from:", apiUrl)
 
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 8000) // Reduced timeout for faster response
@@ -465,12 +424,10 @@ export default function SelectionsPage() {
         clearTimeout(timeoutId)
 
         if (!response.ok) {
-          console.log("[v0] Response not ok:", response.status, response.statusText)
           throw new Error(`Failed to fetch data from local API: ${response.statusText}`)
         }
 
         const data: ApiProductResellersResponse = await response.json()
-        console.log("[v0] Received data:", Object.keys(data).length, "resellers")
 
         // Transform and calculate lowest price for sorting
         const transformed: ResellerData[] = Object.entries(data).map(([resellerKey, resellerData]) => {
@@ -513,14 +470,11 @@ export default function SelectionsPage() {
         console.log("[v0] Transformed resellers:", transformed.length)
 
         if (transformed.length === 0 || transformed.every((r) => Object.keys(r.durations).length === 0)) {
-          console.log("[v0] No valid resellers found")
           setFetchError("Resellers are not found for this product or platform.")
         } else {
-          console.log("[v0] Setting resellers:", transformed.length)
           setFetchedResellers(transformed)
         }
       } catch (e: any) {
-        console.error("[v0] Error fetching product resellers:", e)
         if (e.name === "AbortError") {
           setFetchError("Request timed out. Please try again.")
         } else {
@@ -582,7 +536,6 @@ export default function SelectionsPage() {
   const getPaymentIcon = (method: string) => {
     const iconPath = getPaymentMethodIcon(method)
     if (!iconPath) {
-      console.log("[v0] No icon found for payment method:", method)
       return null
     }
 
@@ -603,8 +556,6 @@ export default function SelectionsPage() {
   }
 
   const displayedSelections = useMemo(() => {
-    console.log("[v0] === CREATING DISPLAYED SELECTIONS ===")
-    console.log("[v0] Current dynamicProductInfo:", dynamicProductInfo)
 
     const result = getVisibleProducts().map((product) => {
       const dynamicInfo = dynamicProductInfo[product.title]
@@ -614,15 +565,9 @@ export default function SelectionsPage() {
         resellers: dynamicInfo?.resellers || product.resellers,
       }
 
-      console.log(`[v0] Product ${product.title}:`)
-      console.log(`[v0]   Original resellers: ${product.resellers}`)
-      console.log(`[v0]   Dynamic resellers: ${dynamicInfo?.resellers}`)
-      console.log(`[v0]   Final resellers: ${finalProduct.resellers}`)
-
       return finalProduct
     })
 
-    console.log("[v0] Final displayedSelections:", result)
     return result
   }, [dynamicProductInfo])
 
