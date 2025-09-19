@@ -1,0 +1,17 @@
+{
+  "majster": {
+    "code": "majster",
+    "createdAt": "2025-09-19T12:33:31.719Z",
+    "clicks": 0,
+    "conversions": 0,
+    "earnings": 0
+  },
+  "majsta": {
+    "code": "majsta",
+    "passwordHash": "9res80",
+    "createdAt": "2025-09-19T12:37:56.052Z",
+    "clicks": 0,
+    "conversions": 0,
+    "earnings": 0
+  }
+}
