@@ -5,7 +5,7 @@ export class AffiliateHandler {
   private currentAffiliateCode: string
 
   private constructor() {
-    this.currentAffiliateCode = AFFILIATE_CONFIG.defaultAffiliate
+    this.currentAffiliateCode = ""
   }
 
   static getInstance(): AffiliateHandler {
@@ -15,25 +15,49 @@ export class AffiliateHandler {
     return AffiliateHandler.instance
   }
 
-  // Set the current affiliate code (can be called from admin panel or config)
-  setAffiliateCode(code: string): void {
-    this.currentAffiliateCode = code
+  private getAffiliateCodeFromCookies(): string | null {
+    if (typeof window === "undefined") return null
+
+    const cookies = document.cookie.split(";")
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split("=")
+      if (name === "affiliate_code") {
+        return decodeURIComponent(value)
+      }
+    }
+    return null
   }
 
-  // Get current affiliate code
+  // Get current affiliate code (now reads from cookies)
   getCurrentAffiliateCode(): string {
-    return this.currentAffiliateCode
+    const cookieCode = this.getAffiliateCodeFromCookies()
+    if (cookieCode) {
+      return cookieCode
+    }
+
+    // Fallback to first reseller's default if no cookie
+    const firstReseller = AFFILIATE_CONFIG.resellers[0]
+    return firstReseller?.defaultAffiliate || "voxlisnet"
+  }
+
+  // Set the current affiliate code and store in cookies
+  setAffiliateCode(code: string): void {
+    if (typeof window !== "undefined") {
+      const expiryDate = new Date()
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1)
+      document.cookie = `affiliate_code=${encodeURIComponent(code)}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`
+    }
   }
 
   // Process a single URL with current affiliate code
   processUrl(url: string, customCode?: string): string {
-    const code = customCode || this.currentAffiliateCode
+    const code = customCode || this.getCurrentAffiliateCode()
     return processAffiliateUrl(url, code)
   }
 
   // Process multiple URLs
   processUrls(urls: string[], customCode?: string): string[] {
-    const code = customCode || this.currentAffiliateCode
+    const code = customCode || this.getCurrentAffiliateCode()
     return urls.map((url) => processAffiliateUrl(url, code))
   }
 
