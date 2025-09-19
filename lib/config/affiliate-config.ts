@@ -14,9 +14,6 @@ export interface ResellerConfig {
 
 // Main affiliate configuration - easy to modify and extend
 export const AFFILIATE_CONFIG = {
-  // Global default affiliate code
-  defaultAffiliate: "voxlisnet",
-
   // Reseller-specific configurations
   resellers: [
     {
@@ -32,7 +29,7 @@ export const AFFILIATE_CONFIG = {
     {
       name: "CheapKeyz",
       domains: ["cheapkeyz.store"],
-      defaultAffiliate: "voxlis",
+      defaultAffiliate: "voxlisnet",
       pattern: {
         type: "path" as const,
         pattern: "/affiliate/{code}",
@@ -42,10 +39,20 @@ export const AFFILIATE_CONFIG = {
     {
       name: "BloxProducts",
       domains: ["bloxproducts.com"],
-      defaultAffiliate: "1270744029168009258",
+      defaultAffiliate: "voxlisnet",
       pattern: {
         type: "query" as const,
         param: "affiliate_key",
+      },
+      verified: false,
+    },
+    {
+      name: "KeyShop",
+      domains: ["keyshop.io", "keyshop.com"],
+      defaultAffiliate: "voxlisnet",
+      pattern: {
+        type: "query" as const,
+        param: "ref",
       },
       verified: false,
     },
@@ -69,10 +76,7 @@ export function getResellerConfig(url: string): ResellerConfig | null {
 export function processAffiliateUrl(url: string, affiliateCode?: string): string {
   const config = getResellerConfig(url)
   if (!config) {
-    // Fallback: add as query parameter for unknown domains
-    const urlObj = new URL(url)
-    urlObj.searchParams.set("affiliate", affiliateCode || AFFILIATE_CONFIG.defaultAffiliate)
-    return urlObj.toString()
+    return affiliateCode ? `${url}${url.includes("?") ? "&" : "?"}affiliate=${affiliateCode}` : url
   }
 
   const code = affiliateCode || config.defaultAffiliate
