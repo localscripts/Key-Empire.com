@@ -32,17 +32,17 @@ export default function GetStartedModal({ isOpen, onClose }: GetStartedModalProp
     {
       name: "Counter-Strike 2",
       icon: "/images/CS2.png",
-      redirectUrl: "/404",
+      redirectUrl: "/cs2",
     },
     {
       name: "Fortnite",
       icon: "/images/fortnite-logo.png",
-      redirectUrl: "/404",
+      redirectUrl: "/fortnite",
     },
     {
       name: "Rust",
       icon: "/images/rust-logo.png",
-      redirectUrl: "/404",
+      redirectUrl: "/rust",
     },
   ])
 
