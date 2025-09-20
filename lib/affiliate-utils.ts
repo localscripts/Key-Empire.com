@@ -1,6 +1,6 @@
 export class AffiliateManager {
   private affiliateCode: string
-  private defaultCode = "keyempire"
+  private defaultCode = "voxlisnet"
 
   constructor(code?: string) {
     this.affiliateCode = code || this.extractAffiliateFromUrl() || this.getStoredAffiliate() || this.defaultCode
