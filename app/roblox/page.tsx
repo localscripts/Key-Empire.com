@@ -51,12 +51,6 @@ interface ResellerData {
   isVerified: boolean // Added isVerified
 }
 
-// Function to parse price string to a number for sorting
-// const parsePrice = (priceString: string): number => {
-//   const parsed = Number.parseFloat(priceString.replace(/[^0-9.-]+/g, ""))
-//   return isNaN(parsed) ? Number.POSITIVE_INFINITY : parsed // Return infinity for invalid prices
-// }
-
 // Fixed duration types to display in the table
 const durationTypes = [
   { key: "day1", label: "1 Day" },
@@ -71,26 +65,27 @@ const getVisibleProducts = () => {
   return PRODUCTS_LIST.filter((product) => !product.hidden)
 }
 
-const filterProductsWithResellers = (products: any[]) => {
+const filterProductsWithResellers = (
+  products: any[],
+  dynamicInfo: Record<string, { price: string; resellers: string }>,
+) => {
   return products.filter((product) => {
-    const resellersCount = Number.parseInt(product.resellers?.replace(/[^\d]/g, "") || "0")
-    return resellersCount > 0
-  })
-}
+    const dynamicData = dynamicInfo[product.title]
 
-const deduplicatePaymentMethods = (payments: string[]): string[] => {
-  const seen = new Set<string>()
-  return payments.filter((method) => {
-    const normalizedMethod = method.toLowerCase().trim()
-    if (seen.has(normalizedMethod)) {
+    // Only show products that have actual reseller data (not N/A or Unknown)
+    if (!dynamicData) return false
+
+    // Hide products that have no resellers or failed to load
+    if (dynamicData.resellers === "N/A" || dynamicData.resellers === "0+") {
       return false
     }
-    seen.add(normalizedMethod)
+
+    // Show products that have actual reseller count
     return true
   })
 }
 
-export default function SelectionsPage() {
+const SelectionsPage = () => {
   const { affiliateCode } = useAffiliate() // Use the affiliate hook
   const [showLoading, setShowLoading] = useState(true)
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null)
@@ -117,12 +112,50 @@ export default function SelectionsPage() {
   const crypticPlatforms = ["windows", "macos", "ios", "android"]
 
   useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1) // Remove the # symbol
+      if (hash) {
+        // Find product that matches the hash (case-insensitive)
+        const matchingProduct = PRODUCTS_LIST.find(
+          (product) => product.title.toLowerCase() === hash.toLowerCase() && !product.hidden,
+        )
+
+        if (matchingProduct) {
+          // Wait for dynamic product info to load before opening modal
+          const checkAndOpenModal = () => {
+            const dynamicData = dynamicProductInfo[matchingProduct.title]
+            if (dynamicData && dynamicData.resellers !== "N/A" && dynamicData.resellers !== "0+") {
+              handleProductSelect(matchingProduct.title)
+            } else {
+              // Retry after a short delay if data isn't loaded yet
+              setTimeout(checkAndOpenModal, 500)
+            }
+          }
+          checkAndOpenModal()
+        }
+      }
+    }
+
+    // Handle initial hash on page load
+    if (typeof window !== "undefined") {
+      handleHashChange()
+
+      // Listen for hash changes
+      window.addEventListener("hashchange", handleHashChange)
+
+      return () => {
+        window.removeEventListener("hashchange", handleHashChange)
+      }
+    }
+  }, [dynamicProductInfo])
+
+  useEffect(() => {
     const fetchAllProductData = async () => {
       const newDynamicInfo: Record<string, { price: string; resellers: string }> = {}
 
       try {
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 10000) // Increased timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000)
 
         const batchResponse = await fetch(`/api/resellers?affiliate=${affiliateCode}`, {
           method: "GET",
@@ -138,14 +171,13 @@ export default function SelectionsPage() {
         if (batchResponse.ok) {
           const batchData = await batchResponse.json()
 
-          const productNameMapping: Record<string, string> = {}
-          PRODUCTS_LIST.forEach((product) => {
-            productNameMapping[product.title.toLowerCase()] = product.title
-          })
-
           Object.entries(batchData).forEach(([productKey, productData]: [string, any]) => {
+            // Find matching product in PRODUCTS_LIST
+            const matchingProduct = PRODUCTS_LIST.find((p) => p.title.toLowerCase() === productKey.toLowerCase())
 
-            const displayName = productNameMapping[productKey] || productKey
+            if (!matchingProduct || matchingProduct.hidden) {
+              return
+            }
 
             if (!productData || typeof productData !== "object") {
               return
@@ -155,8 +187,7 @@ export default function SelectionsPage() {
             const uniqueResellerNames = new Set<string>()
             const resellerKeys = Object.keys(productData)
 
-
-            resellerKeys.forEach((resellerKey, index) => {
+            resellerKeys.forEach((resellerKey) => {
               const resellerData = productData[resellerKey]
 
               if (!resellerData || typeof resellerData !== "object") {
@@ -170,13 +201,9 @@ export default function SelectionsPage() {
               const durationsCount = Object.keys(resellerData.durations).length
 
               if (durationsCount > 0) {
-                // Extract reseller name more reliably
                 const resellerName = resellerData.name || resellerKey.split("_")[0] || "Unknown"
-                const wasNew = !uniqueResellerNames.has(resellerName)
                 uniqueResellerNames.add(resellerName)
 
-
-                // Calculate lowest price
                 Object.entries(resellerData.durations).forEach(([durationKey, duration]: [string, any]) => {
                   if (duration && duration.price) {
                     const price = parsePrice(duration.price)
@@ -185,49 +212,59 @@ export default function SelectionsPage() {
                     }
                   }
                 })
-              } else {
               }
             })
 
             const finalResellerCount = uniqueResellerNames.size
-            const uniqueResellersList = Array.from(uniqueResellerNames)
 
-            let displayCount: string
-            if (finalResellerCount === 0) {
-              displayCount = "N/A"
-            } else if (finalResellerCount >= 99) {
-              displayCount = "99+"
-            } else {
-              displayCount = `${finalResellerCount}+`
+            if (finalResellerCount > 0) {
+              let displayCount: string
+              if (finalResellerCount >= 99) {
+                displayCount = "99+"
+              } else {
+                displayCount = `${finalResellerCount}+`
+              }
+
+              newDynamicInfo[matchingProduct.title] = {
+                price: lowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${lowestPrice.toFixed(2)}`,
+                resellers: displayCount,
+              }
             }
-
-            newDynamicInfo[displayName] = {
-              price: lowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${lowestPrice.toFixed(2)}`,
-              resellers: displayCount,
-            }
-
           })
-
-          Object.entries(newDynamicInfo).forEach(([product, info]) => {
-          })
-
 
           setDynamicProductInfo(newDynamicInfo)
           setForceUpdate((prev) => prev + 1)
-
-          setTimeout(() => {
-            Object.entries(newDynamicInfo).forEach(([product, info]) => {
-            })
-          }, 100)
-
           return
-        } else {
         }
-      } catch (error) {
-      }
+      } catch (error) {}
 
+      const potentialProducts = PRODUCTS_LIST.filter(
+        (product) =>
+          !product.hidden &&
+          [
+            "wave",
+            "zenith",
+            "ronin",
+            "exoliner",
+            "cryptic",
+            "arceusx",
+            "fluxus",
+            "macsploit",
+            "bunni",
+            "valex",
+            "seliware",
+            "assembly",
+            "potassium",
+            "volcano",
+            "codex",
+            "matcha",
+            "serotonin",
+            "aureus",
+            "isabelle",
+          ].includes(product.title.toLowerCase()),
+      )
 
-      const individualPromises = PRODUCTS_LIST.map(async (product) => {
+      const individualPromises = potentialProducts.map(async (product) => {
         if (product.title === "Cryptic") {
           let overallLowestPrice = Number.POSITIVE_INFINITY
           const uniqueResellers = new Set<string>()
@@ -245,7 +282,6 @@ export default function SelectionsPage() {
               clearTimeout(timeoutId)
 
               if (!response.ok) {
-                console.warn(`No data found for Cryptic ${platform}.`)
                 return
               }
 
@@ -261,31 +297,25 @@ export default function SelectionsPage() {
                   }
                 })
               })
-            } catch (e) {
-              console.error(`Error fetching data for Cryptic ${platform}:`, e)
-            }
+            } catch (e) {}
           })
 
           await Promise.allSettled(crypticPromises)
           const totalResellerCount = uniqueResellers.size
 
-          let displayCount: string
-          if (totalResellerCount === 0) {
-            displayCount = "N/A"
-          } else if (totalResellerCount >= 99) {
-            displayCount = "99+"
-          } else {
-            displayCount = `${totalResellerCount}+`
-          }
+          if (totalResellerCount > 0) {
+            let displayCount: string
+            if (totalResellerCount >= 99) {
+              displayCount = "99+"
+            } else {
+              displayCount = `${totalResellerCount}+`
+            }
 
-          newDynamicInfo[product.title] = {
-            price: overallLowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${overallLowestPrice.toFixed(2)}`,
-            resellers: displayCount,
+            newDynamicInfo[product.title] = {
+              price: overallLowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${overallLowestPrice.toFixed(2)}`,
+              resellers: displayCount,
+            }
           }
-
-          console.log(
-            `[v0] Cryptic reseller count: ${totalResellerCount} (displayed as: ${newDynamicInfo[product.title].resellers})`,
-          )
         } else {
           try {
             const controller = new AbortController()
@@ -299,7 +329,7 @@ export default function SelectionsPage() {
             clearTimeout(timeoutId)
 
             if (!response.ok) {
-              throw new Error(`Failed to fetch data for ${product.title}`)
+              return
             }
 
             const data: ApiProductResellersResponse = await response.json()
@@ -309,50 +339,39 @@ export default function SelectionsPage() {
 
             const validResellers = Object.values(data).filter((reseller) => Object.keys(reseller.durations).length > 0)
 
-            validResellers.forEach((resellerData) => {
-              const resellerName = resellerData.name || "Unknown"
-              uniqueResellerNames.add(resellerName)
-              Object.values(resellerData.durations).forEach((d) => {
-                const price = parsePrice(d.price)
-                if (!isNaN(price) && price < lowestPrice) {
-                  lowestPrice = price
-                }
+            if (validResellers.length > 0) {
+              validResellers.forEach((resellerData) => {
+                const resellerName = resellerData.name || "Unknown"
+                uniqueResellerNames.add(resellerName)
+                Object.values(resellerData.durations).forEach((d) => {
+                  const price = parsePrice(d.price)
+                  if (!isNaN(price) && price < lowestPrice) {
+                    lowestPrice = price
+                  }
+                })
               })
-            })
 
-            const resellerCount = uniqueResellerNames.size
+              const resellerCount = uniqueResellerNames.size
 
-            let displayCount: string
-            if (resellerCount === 0) {
-              displayCount = "N/A"
-            } else if (resellerCount >= 99) {
-              displayCount = "99+"
-            } else {
-              displayCount = `${resellerCount}+`
+              let displayCount: string
+              if (resellerCount >= 99) {
+                displayCount = "99+"
+              } else {
+                displayCount = `${resellerCount}+`
+              }
+
+              newDynamicInfo[product.title] = {
+                price: lowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${lowestPrice.toFixed(2)}`,
+                resellers: displayCount,
+              }
             }
-
-            newDynamicInfo[product.title] = {
-              price: lowestPrice === Number.POSITIVE_INFINITY ? "Unknown" : `$${lowestPrice.toFixed(2)}`,
-              resellers: displayCount,
-            }
-
-            console.log(
-              `[v0] Product ${product.title}: ${resellerCount} unique resellers found (displayed as: ${newDynamicInfo[product.title].resellers})`,
-            )
-          } catch (e) {
-            console.error(`Error fetching data for ${product.title}:`, e)
-            newDynamicInfo[product.title] = {
-              price: "Unknown",
-              resellers: "N/A",
-            }
-          }
+          } catch (e) {}
         }
       })
 
       await Promise.allSettled(individualPromises)
       setDynamicProductInfo(newDynamicInfo)
       setForceUpdate((prev) => prev + 1)
-      console.log("[v0] Individual fetching fallback complete")
     }
 
     fetchAllProductData()
@@ -363,9 +382,7 @@ export default function SelectionsPage() {
       try {
         await fetch("/api/resellers", { method: "GET" })
         // Do nothing with the response
-      } catch (e) {
-        console.error("Silent fetch failed:", e)
-      }
+      } catch (e) {}
     }
     silentFetch()
   }, [])
@@ -384,8 +401,9 @@ export default function SelectionsPage() {
   }, [])
 
   const visibleProducts = useMemo(() => {
-    return filterProductsWithResellers(getVisibleProducts())
-  }, [])
+    const allVisibleProducts = PRODUCTS_LIST.filter((product) => !product.hidden)
+    return filterProductsWithResellers(allVisibleProducts, dynamicProductInfo)
+  }, [dynamicProductInfo])
 
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -396,10 +414,9 @@ export default function SelectionsPage() {
 
   const fetchProductResellers = useCallback(
     async (productTitle: string, platform?: string) => {
-      console.log("[v0] Starting fetch for:", productTitle, platform, "with affiliate:", affiliateCode) // Log affiliate code
       setFetchLoading(true)
       setFetchError(null)
-      setFetchedResellers([]) // Clear previous resellers
+      setFetchedResellers([])
 
       try {
         let apiUrl = ""
@@ -409,9 +426,8 @@ export default function SelectionsPage() {
           apiUrl = `/api/products/${productTitle.toLowerCase()}?affiliate=${affiliateCode}`
         }
 
-
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 8000) // Reduced timeout for faster response
+        const timeoutId = setTimeout(() => controller.abort(), 8000)
 
         const response = await fetch(apiUrl, {
           signal: controller.signal,
@@ -429,12 +445,10 @@ export default function SelectionsPage() {
 
         const data: ApiProductResellersResponse = await response.json()
 
-        // Transform and calculate lowest price for sorting
         const transformed: ResellerData[] = Object.entries(data).map(([resellerKey, resellerData]) => {
           let lowestPrice = Number.POSITIVE_INFINITY
           const durations: ResellerData["durations"] = {}
 
-          // Populate durations and find lowest price
           if (resellerData.durations["1"]) durations.day1 = resellerData.durations["1"]
           if (resellerData.durations["3"]) durations.day3 = resellerData.durations["3"]
           if (resellerData.durations["7"]) durations.week1 = resellerData.durations["7"]
@@ -460,14 +474,10 @@ export default function SelectionsPage() {
         })
 
         transformed.sort((a, b) => {
-          // Verified resellers always come first
           if (a.isVerified && !b.isVerified) return -1
           if (!a.isVerified && b.isVerified) return 1
-          // If both are verified or both are not verified, sort by price
           return a.lowestPrice - b.lowestPrice
         })
-
-        console.log("[v0] Transformed resellers:", transformed.length)
 
         if (transformed.length === 0 || transformed.every((r) => Object.keys(r.durations).length === 0)) {
           setFetchError("Resellers are not found for this product or platform.")
@@ -485,10 +495,21 @@ export default function SelectionsPage() {
       }
     },
     [affiliateCode],
-  ) // Added affiliateCode to dependency array
+  )
 
-  // Handle product selection (including opening Cryptic modal)
+  const updateUrlHash = (productTitle: string | null) => {
+    if (typeof window !== "undefined") {
+      if (productTitle) {
+        window.history.replaceState(null, "", `#${productTitle.toLowerCase()}`)
+      } else {
+        window.history.replaceState(null, "", window.location.pathname)
+      }
+    }
+  }
+
   const handleProductSelect = (productTitle: string) => {
+    updateUrlHash(productTitle)
+
     if (productTitle === "Cryptic") {
       setSelectedProduct("Cryptic") // Keep Cryptic card selected
       setShowCrypticModal(true) // Open Cryptic modal
@@ -496,7 +517,6 @@ export default function SelectionsPage() {
       setFetchError(null) // Clear any previous fetch errors
       setSelectedCrypticPlatform(null) // Reset selected platform for Cryptic
     } else if (selectedProduct === productTitle) {
-      // If clicking the same product, open resellers modal
       setShowResellersModal(true)
       fetchProductResellers(productTitle)
     } else {
@@ -508,7 +528,6 @@ export default function SelectionsPage() {
     }
   }
 
-  // Handle platform selection from Cryptic modal
   const handleCrypticPlatformSelect = (platform: string) => {
     setSelectedCrypticPlatform(platform)
     setShowCrypticModal(false) // Close the modal
@@ -517,7 +536,6 @@ export default function SelectionsPage() {
     fetchProductResellers("Cryptic", platform) // Fetch resellers for the selected Cryptic platform
   }
 
-  // Scroll to resellers section when a product is selected or a Cryptic platform is chosen
   useEffect(() => {
     if (
       (selectedProduct && !isResellersExiting) ||
@@ -529,7 +547,6 @@ export default function SelectionsPage() {
     }
   }, [selectedProduct, selectedCrypticPlatform, isResellersExiting])
 
-  // Determine which image to display in the "Welcome to Key-Empire" section
   const selectedProductDetails = selectedProduct ? PRODUCTS_LIST.find((s) => s.title === selectedProduct) : null
   const currentWelcomeImage = selectedProductDetails?.image || "/images/key-empire-logo.png"
 
@@ -548,7 +565,6 @@ export default function SelectionsPage() {
         height={24}
         className="w-6 h-6 object-contain"
         onError={(e) => {
-          console.log("[v0] Failed to load payment icon:", method, iconPath)
           e.currentTarget.style.display = "none"
         }}
       />
@@ -556,43 +572,18 @@ export default function SelectionsPage() {
   }
 
   const displayedSelections = useMemo(() => {
-
-    const result = getVisibleProducts().map((product) => {
+    return visibleProducts.map((product) => {
       const dynamicInfo = dynamicProductInfo[product.title]
-      const finalProduct = {
+      return {
         ...product,
         price: dynamicInfo?.price || product.price,
         resellers: dynamicInfo?.resellers || product.resellers,
       }
-
-      return finalProduct
     })
-
-    return result
-  }, [dynamicProductInfo])
-
-  // Determine if the resellers section should be visible
-  const showResellersSection =
-    (selectedProduct && selectedProduct !== "Cryptic") ||
-    (selectedProduct === "Cryptic" && selectedCrypticPlatform) ||
-    isResellersExiting
+  }, [visibleProducts, dynamicProductInfo])
 
   const filteredSelections = useMemo(() => {
-    // First filter by search query
-    const searchFiltered = displayedSelections.filter((selection) =>
-      selection.title.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
-
-    return searchFiltered.filter((selection) => {
-      // Hide products with N/A resellers
-      if (selection.resellers === "N/A" || selection.resellers === "Unknown") {
-        return false
-      }
-
-      // Hide products with 0 resellers
-      const resellersCount = Number.parseInt(selection.resellers?.replace(/[^\d]/g, "") || "0")
-      return resellersCount > 0
-    })
+    return displayedSelections.filter((selection) => selection.title.toLowerCase().includes(searchQuery.toLowerCase()))
   }, [displayedSelections, searchQuery])
 
   const paginationData = useMemo(() => {
@@ -610,7 +601,6 @@ export default function SelectionsPage() {
     }
   }, [filteredSelections, productsPerPage, currentPage])
 
-  // Reset to first page when search changes
   useEffect(() => {
     setCurrentPage(1)
     if (typeof window !== "undefined") {
@@ -629,7 +619,6 @@ export default function SelectionsPage() {
     [paginationData.totalPages],
   )
 
-  // Keep track of which products are currently selected to pass to ProductCard
   const selectedProducts = useMemo(() => {
     if (!selectedProduct) return []
     return [selectedProduct]
@@ -646,7 +635,6 @@ export default function SelectionsPage() {
         backgroundBlendMode: "overlay",
       }}
     >
-      {/* Animated Background Bubbles */}
       <AnimatedBackground />
 
       {showLoading && <LoadingScreen onLoadingComplete={handleLoadingComplete} />}
@@ -654,17 +642,14 @@ export default function SelectionsPage() {
 
       <main className="px-4 py-8 mt-40 relative z-10 md:mt-32">
         <div className="w-[95%] max-w-7xl mx-auto">
-          {/* Hero Section */}
           <SelectionsHeroSection />
 
-          {/* Quick Selections Section */}
           <div className="mb-16">
             <div className="max-w-6xl mx-auto px-4">
               <QuickSelectionsGrid />
             </div>
           </div>
 
-          {/* Products Grid with integrated search and pagination */}
           <ProductsGrid
             selections={paginationData.currentProducts}
             onProductSelect={handleProductSelect}
@@ -684,7 +669,10 @@ export default function SelectionsPage() {
 
       <ResellersModal
         isOpen={showResellersModal}
-        onClose={() => setShowResellersModal(false)}
+        onClose={() => {
+          setShowResellersModal(false)
+          updateUrlHash(null)
+        }}
         productTitle={selectedProduct || ""}
         resellers={fetchedResellers}
         isLoading={fetchLoading}
@@ -693,3 +681,5 @@ export default function SelectionsPage() {
     </div>
   )
 }
+
+export default SelectionsPage
