@@ -14,19 +14,19 @@ const quickLinks: QuickLink[] = [
   {
     title: "Discord",
     description: "Browse our top selections",
-    href: "/discord",
+    href: "/selections",
     color: "from-blue-500 to-blue-600",
   },
   {
     title: "Get Started",
     description: "View all products",
-    href: "/",
+    href: "/selections",
     color: "from-green-500 to-green-600",
   },
   {
     title: "Referrals",
     description: "Find your perfect tool",
-    href: "/affiliate",
+    href: "/selections",
     color: "from-purple-500 to-purple-600",
   },
 ]

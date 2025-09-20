@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { affiliateHandler } from "@/lib/services/affiliate-handler"
+import { AffiliateManager } from "@/lib/affiliate-utils"
 
 interface DurationPricing {
   price: string
@@ -55,6 +56,12 @@ export default function ResellersModal({
   const [isClosing, setIsClosing] = useState(false)
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null)
   const [showPaymentsTooltip, setShowPaymentsTooltip] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      new AffiliateManager()
+    }
+  }, [])
 
   const getAvailableDurations = () => {
     const availableDurations = new Set<string>()
@@ -111,31 +118,55 @@ export default function ResellersModal({
   }, [isOpen])
 
   const PaymentMethodsDisplay = ({ payments, resellerIndex }: { payments: string[]; resellerIndex: number }) => {
-    const maxVisiblePayments = 4 // Show up to 4 payment methods initially
+    const maxVisiblePayments = 8 // Show up to 8 payment methods (3+3+2 layout)
     const visiblePayments = payments.slice(0, maxVisiblePayments)
     const remainingPayments = payments.slice(maxVisiblePayments)
     const hiddenCount = remainingPayments.length
 
+    const getPaymentRows = () => {
+      const rows = []
+      // Row 1: First 3 payments
+      if (visiblePayments.length > 0) {
+        rows.push(visiblePayments.slice(0, 3))
+      }
+      // Row 2: Next 3 payments
+      if (visiblePayments.length > 3) {
+        rows.push(visiblePayments.slice(3, 6))
+      }
+      // Row 3: Last 2 payments + expand button if needed
+      if (visiblePayments.length > 6) {
+        const lastRowPayments = visiblePayments.slice(6, 8)
+        rows.push(lastRowPayments)
+      }
+      return rows
+    }
+
+    const paymentRows = getPaymentRows()
+
     return (
       <div className="relative">
-        <div className="flex flex-wrap gap-1">
-          {visiblePayments.map((payment, idx) => (
-            <span
-              key={idx}
-              className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-xs rounded-md text-gray-700 dark:text-gray-300 whitespace-nowrap"
-            >
-              {payment}
-            </span>
+        <div className="space-y-1">
+          {paymentRows.map((row, rowIndex) => (
+            <div key={rowIndex} className="flex flex-wrap gap-1">
+              {row.map((payment, idx) => (
+                <span
+                  key={idx}
+                  className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-xs rounded-md text-gray-700 dark:text-gray-300 whitespace-nowrap"
+                >
+                  {payment}
+                </span>
+              ))}
+              {rowIndex === paymentRows.length - 1 && hiddenCount > 0 && (
+                <button
+                  className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-xs rounded-md text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all duration-200 whitespace-nowrap cursor-pointer"
+                  onMouseEnter={() => setShowPaymentsTooltip(resellerIndex)}
+                  onMouseLeave={() => setShowPaymentsTooltip(null)}
+                >
+                  +{hiddenCount} more
+                </button>
+              )}
+            </div>
           ))}
-          {hiddenCount > 0 && (
-            <button
-              className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-xs rounded-md text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all duration-200 whitespace-nowrap cursor-pointer"
-              onMouseEnter={() => setShowPaymentsTooltip(resellerIndex)}
-              onMouseLeave={() => setShowPaymentsTooltip(null)}
-            >
-              +{hiddenCount} more
-            </button>
-          )}
         </div>
 
         {showPaymentsTooltip === resellerIndex && (
