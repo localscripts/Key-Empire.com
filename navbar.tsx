@@ -8,32 +8,34 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import ReportModal from "./components/report-modal"
-import GetStartedModal from "./components/get-started-modal"
-import AffiliateModal from "./components/affiliate-modal"
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
-  const [showGetStartedModal, setShowGetStartedModal] = useState(false)
-  const [isAffiliateModalOpen, setIsAffiliateModalOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(true) // default dark
+  const [isDarkMode, setIsDarkMode] = useState(true) // Initialize to true for default dark mode
 
+  // Handle scroll effect
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50)
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY
+      setIsScrolled(scrollPosition > 50)
+    }
+
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  // Handle dark mode toggle
   const toggleDarkMode = () => {
-    setIsDarkMode((v) => !v)
-    document.documentElement.classList.toggle("dark", isDarkMode) // use previous value
+    setIsDarkMode(!isDarkMode)
+    document.documentElement.classList.toggle("dark", !isDarkMode)
   }
 
   return (
     <>
       <nav
-        className={`fixed top-1 sm:top-2 md:top-4 left-1/2 -translate-x-1/2 ${isOpen ? "z-[100]" : "z-[120]"} w-[96%] sm:w-[95%] max-w-7xl rounded-lg sm:rounded-xl md:rounded-2xl border shadow-2xl select-none transition-all duration-300 ${
+        className={`fixed top-1 sm:top-2 md:top-4 left-1/2 transform -translate-x-1/2 ${isOpen ? "z-[100]" : "z-[120]"} w-[96%] sm:w-[95%] max-w-7xl rounded-lg sm:rounded-xl md:rounded-2xl border shadow-2xl select-none transition-all duration-300 ${
           isScrolled
             ? "bg-white/90 backdrop-blur-xl border-gray-200/50 dark:bg-gray-900/90 dark:border-gray-700/50"
             : "bg-white/95 backdrop-blur-lg border-gray-200 dark:bg-gray-900/95 dark:border-gray-700"
@@ -42,13 +44,13 @@ export default function Navbar() {
           opacity: 0,
           animation: "fadeIn 0.8s ease-out 0.5s forwards",
           boxShadow: isScrolled
-            ? "0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.1)"
-            : "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
+            ? "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)"
+            : "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
         }}
       >
         <div className="px-2 sm:px-3 md:px-6">
           <div className="flex h-12 sm:h-14 md:h-16 lg:h-18 items-center justify-between gap-1 sm:gap-2 md:gap-4">
-            {/* Logo */}
+            {/* Left side with logo */}
             <div className="flex items-center gap-1 sm:gap-2 md:gap-3 flex-shrink-0">
               <Link href="/" className="flex items-center group">
                 <div className="relative rounded-lg">
@@ -60,15 +62,17 @@ export default function Navbar() {
                     className="h-6 sm:h-5 md:h-6 lg:h-8 w-auto select-none transform group-hover:scale-105 transition-all duration-300 drop-shadow-lg"
                     priority
                     draggable={false}
-                    style={{ filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.15))" }}
+                    style={{
+                      filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15))",
+                    }}
                   />
                 </div>
               </Link>
             </div>
 
-            {/* Desktop CTAs */}
+            {/* Desktop CTA */}
             <div className="hidden md:flex md:items-center md:space-x-4 flex-shrink-0">
-              {/* Dark Mode */}
+              {/* Dark Mode Toggle */}
               <Button
                 variant="outline"
                 size="sm"
@@ -79,14 +83,15 @@ export default function Navbar() {
                     : "bg-white/90 border-gray-300 hover:bg-gray-50 hover:border-gray-400 dark:bg-gray-800/90 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-500"
                 }`}
               >
+                <span className="absolute inset-0 bg-gradient-to-r from-gray-400 to-gray-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                 {isDarkMode ? (
                   <Sun className="h-4 w-4 select-none relative z-10 text-yellow-500" />
                 ) : (
-                  <Moon className="h-4 w-4 select-none relative z-10" />
+                  <Moon className="h-4 w-4 select-none relative z-10 text-gray-700 dark:text-gray-300" />
                 )}
+                <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
               </Button>
 
-              {/* Discord → /discord (kept as Link) */}
               <Link href="/discord">
                 <Button
                   variant="outline"
@@ -97,6 +102,7 @@ export default function Navbar() {
                       : "bg-white/90 border-gray-300 hover:bg-blue-50 hover:border-blue-300 dark:bg-gray-800/90 dark:border-gray-600 dark:hover:bg-blue-900/20 dark:hover:border-blue-400"
                   }`}
                 >
+                  <span className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                   <Image
                     src="/images/discord-icon.svg"
                     alt="Discord"
@@ -105,10 +111,9 @@ export default function Navbar() {
                     className="h-4 w-4 select-none relative z-10"
                     draggable={false}
                   />
+                  <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
                 </Button>
               </Link>
-
-              {/* Report */}
               <Button
                 variant="outline"
                 size="sm"
@@ -119,32 +124,26 @@ export default function Navbar() {
                     : "bg-white/90 border-gray-300 hover:bg-red-50 hover:border-red-300 dark:bg-gray-800/90 dark:border-gray-600 dark:hover:bg-red-900/20 dark:hover:border-red-400"
                 }`}
               >
+                <span className="absolute inset-0 bg-gradient-to-r from-red-400 to-red-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                 <Flag className="h-4 w-4 select-none relative z-10" />
+                <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
               </Button>
-
-              {/* Get Started → OPEN MODAL (no Link) */}
-              <Button
-                size="sm"
-                onClick={() => setShowGetStartedModal(true)}
-                className="select-none relative overflow-hidden group transform hover:scale-105 transition-all duration-300 hover:shadow-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold border-0 shadow-lg"
-              >
-                <span className="relative z-10 select-none flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Get Started
-                </span>
-              </Button>
-
-              {/* Referral → OPEN AffiliateModal (no Link) */}
-              <Button
-                size="sm"
-                onClick={() => setIsAffiliateModalOpen(true)}
-                className="select-none relative overflow-hidden group transform hover:scale-105 transition-all duration-300 hover:shadow-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold border-0 shadow-lg"
-              >
-                Referral
-              </Button>
+              <Link href="/404">
+                <Button
+                  size="sm"
+                  className="select-none relative overflow-hidden group transform hover:scale-105 transition-all duration-300 hover:shadow-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold border-0 shadow-lg"
+                >
+                  <span className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                  <span className="relative z-10 select-none flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Start Earning
+                  </span>
+                  <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
+                </Button>
+              </Link>
             </div>
 
-            {/* Mobile */}
+            {/* Mobile Menu */}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button
@@ -163,66 +162,94 @@ export default function Navbar() {
                 className="w-[280px] sm:w-[300px] md:w-[400px] select-none bg-white/95 backdrop-blur-xl border-l border-gray-200 dark:bg-gray-900/95 dark:border-gray-700 shadow-2xl z-[150]"
               >
                 <div className="flex flex-col space-y-4 sm:space-y-6 mt-6 sm:mt-8">
-                  {/* Dark mode */}
+                  {/* Dark Mode Toggle Mobile */}
                   <button
-                    onClick={() => {
-                      toggleDarkMode()
-                    }}
-                    className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 border-gray-300 text-gray-800 transition-colors hover:bg-gray-50 hover:border-gray-400 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:border-gray-500 select-none"
+                    onClick={toggleDarkMode}
+                    className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 border-gray-300 text-gray-800 transition-colors hover:bg-gray-50 hover:border-gray-400 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:border-gray-500 select-none relative overflow-hidden group transform hover:scale-105 duration-300 hover:shadow-lg w-full text-left"
                   >
-                    {isDarkMode ? <Sun className="h-5 w-5 text-yellow-500" /> : <Moon className="h-5 w-5" />}
-                    <span className="font-medium">{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
+                    <span className="absolute inset-0 bg-gradient-to-r from-gray-400 to-gray-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+                    {isDarkMode ? (
+                      <Sun className="h-5 w-5 select-none relative z-10 text-yellow-500" />
+                    ) : (
+                      <Moon className="h-5 w-5 select-none relative z-10" />
+                    )}
+                    <span className="font-medium relative z-10">{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
+                    <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
                   </button>
 
-                  {/* Discord keeps link */}
+                  {/* Discord Button */}
                   <Link
                     href="/discord"
-                    className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 border-gray-300 text-gray-800 transition-colors hover:bg-blue-50 hover:border-blue-300 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-blue-900/20 dark:hover:border-blue-400 select-none"
+                    className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 border-gray-300 text-gray-800 transition-colors hover:bg-blue-50 hover:border-blue-300 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-blue-900/20 dark:hover:border-blue-400 select-none relative overflow-hidden group transform hover:scale-105 duration-300 hover:shadow-lg"
                     onClick={() => setIsOpen(false)}
                   >
-                    <Image src="/images/discord-icon.svg" alt="Discord" width={20} height={20} className="h-5 w-5" />
-                    <span className="font-medium">Join Discord</span>
+                    <span className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+                    <Image
+                      src="/images/discord-icon.svg"
+                      alt="Discord"
+                      width={20}
+                      height={20}
+                      className="h-5 w-5 select-none relative z-10"
+                      draggable={false}
+                    />
+                    <span className="font-medium relative z-10">Join Discord</span>
+                    <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
                   </Link>
 
-                  {/* Report */}
+                  {/* Report Button */}
                   <button
                     onClick={() => {
                       setShowReportModal(true)
                       setIsOpen(false)
                     }}
-                    className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 border-gray-300 text-gray-800 hover:text-red-600 hover:bg-red-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-red-900/20 dark:hover:border-red-400 dark:hover:text-red-400 select-none"
+                    className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 border-gray-300 text-gray-800 transition-colors hover:bg-red-50 hover:border-red-300 hover:text-red-600 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-red-900/20 dark:hover:border-red-400 dark:hover:text-red-400 select-none relative overflow-hidden group transform hover:scale-105 duration-300 hover:shadow-lg w-full text-left"
                   >
-                    <Flag className="h-5 w-5" />
-                    <span className="font-medium">Report Issue</span>
+                    <span className="absolute inset-0 bg-gradient-to-r from-red-400 to-red-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
+                    <Flag className="h-5 w-5 select-none relative z-10" />
+                    <span className="font-medium relative z-10">Report Issue</span>
+                    <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
                   </button>
 
-                  {/* Get Started → OPEN MODAL (no Link) */}
-                  <button
-                    onClick={() => {
-                      setShowGetStartedModal(true)
-                      setIsOpen(false)
-                    }}
-                    className="w-full p-3 sm:p-4 h-auto select-none relative overflow-hidden group transform hover:scale-105 transition-all duration-300 hover:shadow-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold border-0 rounded-xl shadow-lg"
-                  >
-                    <span className="relative z-10 select-none font-medium flex items-center justify-center gap-2">
-                      <DollarSign className="h-5 w-5" />
-                      Get Started
-                    </span>
-                  </button>
+                  {/* Start Earning Button */}
+                  <Link href="/selections">
+                    <Button
+                      onClick={() => setIsOpen(false)}
+                      className="w-full p-3 sm:p-4 h-auto select-none relative overflow-hidden group transform hover:scale-105 transition-all duration-300 hover:shadow-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold border-0 rounded-xl shadow-lg"
+                    >
+                      <span className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                      <span className="relative z-10 select-none font-medium flex items-center justify-center gap-2">
+                        <DollarSign className="h-5 w-5" />
+                        Start Earning
+                      </span>
+                      <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-[200%] group-hover:translate-x-[50%] transition-transform duration-700"></div>
+                    </Button>
+                  </Link>
 
-                  {/* Referral → OPEN AffiliateModal (no Link) */}
-                  <button
-                    onClick={() => {
-                      setIsAffiliateModalOpen(true)
-                      setIsOpen(false)
-                    }}
-                    className="w-full p-3 sm:p-4 h-auto select-none relative overflow-hidden group transform hover:scale-105 transition-all duration-300 hover:shadow-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold border-0 rounded-xl shadow-lg"
-                  >
-                    <span className="relative z-10 select-none font-medium flex items-center justify-center">
-                      Referral
-                    </span>
-                  </button>
-      
+                  {/* Mobile Navigation Links */}
+                  <div className="pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="space-y-2 sm:space-y-3">
+                      <Link
+                        href="/homepage"
+                        onClick={() => setIsOpen(false)}
+                        className="block p-2 sm:p-3 text-gray-700 hover:text-green-600 hover:bg-green-50 dark:text-gray-300 dark:hover:text-green-400 dark:hover:bg-green-900/20 rounded-lg transition-colors font-medium"
+                      >
+                        Browse Products
+                      </Link>
+                      <Link
+                        href="/selections"
+                        onClick={() => setIsOpen(false)}
+                        className="block p-2 sm:p-3 text-gray-700 hover:text-green-600 hover:bg-green-50 dark:text-gray-300 dark:hover:text-green-400 dark:hover:bg-green-900/20 rounded-lg transition-colors font-medium"
+                      >
+                        View Resellers
+                      </Link>
+                      <Link
+                        href="/selections"
+                        onClick={() => setIsOpen(false)}
+                        className="block p-2 sm:p-3 text-gray-700 hover:text-green-600 hover:bg-green-50 dark:text-gray-300 dark:hover:text-green-400 dark:hover:bg-green-900/20 rounded-lg transition-colors font-medium"
+                      >
+                        Selections
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </SheetContent>
@@ -231,17 +258,30 @@ export default function Navbar() {
         </div>
 
         <style jsx>{`
-          @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-        `}</style>
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      
+      @keyframes fadeInScale {
+        from {
+          opacity: 0;
+          transform: translateY(-10px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+    `}</style>
       </nav>
 
-      {/* Modals (mounted once here) */}
+      {/* Report Modal */}
       <ReportModal isOpen={showReportModal} onClose={() => setShowReportModal(false)} />
-      <GetStartedModal isOpen={showGetStartedModal} onClose={() => setShowGetStartedModal(false)} />
-      <AffiliateModal isOpen={isAffiliateModalOpen} onClose={() => setIsAffiliateModalOpen(false)} />
     </>
   )
 }
