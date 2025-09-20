@@ -3,9 +3,11 @@ import { AFFILIATE_CONFIG, processAffiliateUrl, getResellerConfig } from "@/lib/
 export class AffiliateHandler {
   private static instance: AffiliateHandler
   private currentAffiliateCode: string
+  private exitHandlerAdded = false
 
   private constructor() {
     this.currentAffiliateCode = ""
+    this.setupExitHandler()
   }
 
   static getInstance(): AffiliateHandler {
@@ -84,6 +86,23 @@ export class AffiliateHandler {
   // Validate affiliate code format
   isValidAffiliateCode(code: string): boolean {
     return /^[a-zA-Z0-9_-]{3,20}$/.test(code)
+  }
+
+  clearAffiliateCode(): void {
+    if (typeof window !== "undefined") {
+      document.cookie = "affiliate_code=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax"
+    }
+  }
+
+  private setupExitHandler(): void {
+    if (typeof window !== "undefined" && !this.exitHandlerAdded) {
+      const handleBeforeUnload = () => {
+        this.clearAffiliateCode()
+      }
+
+      window.addEventListener("beforeunload", handleBeforeUnload)
+      this.exitHandlerAdded = true
+    }
   }
 }
 
