@@ -8,7 +8,8 @@ export const metadata: Metadata = {
   title: "Key-Empire!",
   description:
     "Your premium marketplace for executors, scripts, and digital tools. Join thousands of satisfied customers worldwide.",
-  keywords: "executors, scripts, premium tools, marketplace, digital products, gaming tools",
+  keywords:
+    "executors, scripts, premium tools, marketplace, digital products, gaming tools",
   authors: [{ name: "Key-Empire" }],
   creator: "Key-Empire",
   publisher: "Key-Empire",
@@ -16,7 +17,21 @@ export const metadata: Metadata = {
   // Theme color for mobile browsers and Discord
   themeColor: "#80E26F",
 
-  // Open Graph tags for Discord, Facebook, etc.
+  // Icons (let Next.js generate the <link> tags)
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    shortcut: ["/favicon.ico"],
+  },
+
+  // Optional: PWA manifest
+  manifest: "/site.webmanifest",
+
+  // Open Graph
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -36,7 +51,7 @@ export const metadata: Metadata = {
     ],
   },
 
-  // Twitter Card tags
+  // Twitter Card
   twitter: {
     card: "summary_large_image",
     site: "@KeyEmpire",
@@ -47,7 +62,7 @@ export const metadata: Metadata = {
     images: ["/images/key-empire-banner.png"],
   },
 
-  // Additional meta tags
+  // Robots
   robots: {
     index: true,
     follow: true,
@@ -63,23 +78,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark">
       <head>
-        {/* Theme color meta tags */}
-        <meta name="theme-color" content="#80E26F" />
-        <meta name="msapplication-TileColor" content="#80E26F" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-
-        {/* Favicons */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-
+        {/* Optional: these are now covered by `metadata.themeColor` and icons.
+            Keep only what isn't covered by Metadata (like this inline font style). */}
         <style>{`
 html {
   font-family: ${GeistSans.style.fontFamily};
