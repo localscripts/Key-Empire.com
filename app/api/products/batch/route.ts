@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(batchResults, {
       headers: {
-        "Cache-Control": "public, s-maxage=180, stale-while-revalidate=300",
+        "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600",
         "Content-Type": "application/json",
       },
     })
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(batchResults, {
       headers: {
-        "Cache-Control": "public, s-maxage=180, stale-while-revalidate=300",
+        "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600",
         "Content-Type": "application/json",
       },
     })
