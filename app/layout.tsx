@@ -74,36 +74,11 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#80E26F" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
-        {/* Discord-specific meta tags - Single image reference */}
-        <meta property="og:site_name" content="Key-Empire" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Key-Empire!" />
-        <meta
-          property="og:description"
-          content="Your premium marketplace for executors, scripts, and digital tools. Join thousands of satisfied customers worldwide."
-        />
-        <meta property="og:image" content="/images/key-empire-banner.png" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="Key-Empire - Premium Marketplace" />
-        <meta property="og:url" content="https://key-empire.com" />
-
-        {/* Twitter Card meta tags - Single image reference */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@KeyEmpire" />
-        <meta name="twitter:creator" content="@KeyEmpire" />
-        <meta name="twitter:title" content="Key-Empire!" />
-        <meta
-          name="twitter:description"
-          content="Your premium marketplace for executors, scripts, and digital tools. Join thousands of satisfied customers worldwide."
-        />
-        <meta name="twitter:image" content="/images/key-empire-banner.png" />
-
-        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico" />
+        {/* Favicons */}
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
         <style>{`
 html {
