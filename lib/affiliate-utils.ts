@@ -1,10 +1,14 @@
+// Import centralized configuration
+import { DEFAULT_AFFILIATE_CODE } from "./config/global-affiliate-config"
+
 export class AffiliateManager {
   private affiliateCode: string
-  private defaultCode = "voxlisnet"
+  private defaultCode = DEFAULT_AFFILIATE_CODE
 
   constructor(code?: string) {
     this.affiliateCode = code || this.extractAffiliateFromUrl() || this.getStoredAffiliate() || this.defaultCode
     this.storeAffiliate(this.affiliateCode)
+    this.setupCookieRemovalOnExit()
   }
 
   private extractAffiliateFromUrl(): string | null {
@@ -51,6 +55,42 @@ export class AffiliateManager {
   public setAffiliateCode(code: string): void {
     this.affiliateCode = code
     this.storeAffiliate(code)
+  }
+
+  public removeAffiliateCookie(): void {
+    if (typeof window === "undefined") return
+
+    // Set cookie with past expiration date to remove it
+    document.cookie = `affiliate_code=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`
+  }
+
+  private setupCookieRemovalOnExit(): void {
+    if (typeof window === "undefined") return
+
+    const handleBeforeUnload = () => {
+      this.removeAffiliateCookie()
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        this.removeAffiliateCookie()
+      }
+    }
+
+    // Remove cookie when user closes tab/window or navigates away
+    window.addEventListener("beforeunload", handleBeforeUnload)
+
+    // Remove cookie when tab becomes hidden (user switches tabs or minimizes)
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
+    // Cleanup function (though it may not always run)
+    const cleanup = () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
+
+    // Store cleanup function for potential manual cleanup
+    ;(window as any).__affiliateCleanup = cleanup
   }
 }
 
