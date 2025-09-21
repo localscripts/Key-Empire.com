@@ -12,6 +12,8 @@ import { PRODUCTS_LIST, parsePrice } from "../../lib/products-data"
 import Image from "next/image"
 import { getPaymentMethodIcon } from "../../lib/payment-methods" // Updated to use new simplified payment methods system
 import { useAffiliate } from "../../lib/affiliate-utils" // Import useAffiliate
+import { transformResellerDurations } from "../../lib/duration-utils" // Import dynamic duration utilities
+import { filterProductsWithResellers } from "../../lib/filter-utils" // Declare filterProductsWithResellers import
 
 // New type definitions for API response
 interface DurationPricing {
@@ -49,40 +51,6 @@ interface ResellerData {
   isPremium: boolean
   pfpUrl: string // Added pfpUrl
   isVerified: boolean // Added isVerified
-}
-
-// Fixed duration types to display in the table
-const durationTypes = [
-  { key: "day1", label: "1 Day" },
-  { key: "day3", label: "3 Days" },
-  { key: "week1", label: "1 Week" },
-  { key: "month1", label: "1 Month" },
-  { key: "year1", label: "1 Year" },
-]
-
-// Helper function to filter out hidden products
-const getVisibleProducts = () => {
-  return PRODUCTS_LIST.filter((product) => !product.hidden)
-}
-
-const filterProductsWithResellers = (
-  products: any[],
-  dynamicInfo: Record<string, { price: string; resellers: string }>,
-) => {
-  return products.filter((product) => {
-    const dynamicData = dynamicInfo[product.title]
-
-    // Only show products that have actual reseller data (not N/A or Unknown)
-    if (!dynamicData) return false
-
-    // Hide products that have no resellers or failed to load
-    if (dynamicData.resellers === "N/A" || dynamicData.resellers === "0+") {
-      return false
-    }
-
-    // Show products that have actual reseller count
-    return true
-  })
 }
 
 const SelectionsPage = () => {
@@ -447,16 +415,15 @@ const SelectionsPage = () => {
 
         const transformed: ResellerData[] = Object.entries(data).map(([resellerKey, resellerData]) => {
           let lowestPrice = Number.POSITIVE_INFINITY
-          const durations: ResellerData["durations"] = {}
 
-          if (resellerData.durations["1"]) durations.day1 = resellerData.durations["1"]
-          if (resellerData.durations["3"]) durations.day3 = resellerData.durations["3"]
-          if (resellerData.durations["7"]) durations.week1 = resellerData.durations["7"]
-          if (resellerData.durations["30"]) durations.month1 = resellerData.durations["30"]
-          if (resellerData.durations["365"]) durations.year1 = resellerData.durations["365"]
+          // Transform durations to use normalized keys
+          const transformedResellerData = transformResellerDurations(resellerData)
+          const durations: any = {}
 
-          Object.values(resellerData.durations).forEach((d) => {
-            const price = parsePrice(d.price)
+          // Copy all available durations with normalized keys
+          Object.entries(transformedResellerData.durations).forEach(([durationKey, durationData]) => {
+            durations[durationKey] = durationData
+            const price = parsePrice((durationData as any).price)
             if (!isNaN(price) && price < lowestPrice) {
               lowestPrice = price
             }
