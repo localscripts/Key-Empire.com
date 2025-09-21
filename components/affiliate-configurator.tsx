@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Settings, Save, EyeOff } from "lucide-react"
 import { affiliateHandler } from "@/lib/services/affiliate-handler"
-import { AFFILIATE_CONFIG } from "@/lib/config/affiliate-config"
+import { GLOBAL_RESELLERS } from "@/lib/config/global-affiliate-config"
 
 export default function AffiliateConfigurator() {
   const [currentCode, setCurrentCode] = useState("")
@@ -132,7 +132,7 @@ export default function AffiliateConfigurator() {
           <div className="space-y-2">
             <label className="text-sm font-medium">Configured Resellers</label>
             <div className="grid gap-2">
-              {AFFILIATE_CONFIG.resellers.map((reseller, index) => (
+              {GLOBAL_RESELLERS.map((reseller, index) => (
                 <div
                   key={index}
                   className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
@@ -150,7 +150,7 @@ export default function AffiliateConfigurator() {
                       </Badge>
                     )}
                     <Badge variant="outline" className="text-xs font-mono">
-                      {reseller.defaultAffiliate}
+                      keyempire
                     </Badge>
                   </div>
                 </div>
