@@ -19,7 +19,7 @@ export const AFFILIATE_CONFIG = {
     {
       name: "RobloxCheatz",
       domains: ["robloxcheatz.com"],
-      defaultAffiliate: "voxlisnet",
+      defaultAffiliate: "keyempire",
       pattern: {
         type: "path" as const,
         pattern: "/affiliate/{code}",
@@ -29,7 +29,7 @@ export const AFFILIATE_CONFIG = {
     {
       name: "CheapKeyz",
       domains: ["cheapkeyz.store"],
-      defaultAffiliate: "voxlisnet",
+      defaultAffiliate: "keyempire",
       pattern: {
         type: "path" as const,
         pattern: "/affiliate/{code}",
@@ -39,7 +39,7 @@ export const AFFILIATE_CONFIG = {
     {
       name: "BloxProducts",
       domains: ["bloxproducts.com"],
-      defaultAffiliate: "voxlisnet",
+      defaultAffiliate: "keyempire",
       pattern: {
         type: "query" as const,
         param: "affiliate_key",
