@@ -6,7 +6,7 @@ import path from "path"
 
 const DATA_DIR = path.join(process.cwd(), "data")
 const AFFILIATE_DATA_FILE = path.join(DATA_DIR, "affiliate-data.json")
-const CACHE_DURATION = 3 * 60 * 1000 // 3 minutes in milliseconds
+const CACHE_DURATION = 30 * 60 * 1000 // 30 minutes in milliseconds
 
 export class LocalAffiliateService {
   private static instance: LocalAffiliateService
