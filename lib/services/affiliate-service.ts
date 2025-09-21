@@ -1,12 +1,12 @@
 import type { LocalAffiliateData, ProductResellers } from "../types/affiliate"
 import { RESELLER_SITES, KNOWN_EXPLOITS, PAYMENT_PATTERNS } from "../data/reseller-sites"
-import { processAffiliateUrl } from "../config/affiliate-config"
+import { processAffiliateUrl } from "../config/global-affiliate-config"
+import { DEFAULT_AFFILIATE_CODE, CACHE_DURATION } from "../config/global-affiliate-config"
 import fs from "fs/promises"
 import path from "path"
 
 const DATA_DIR = path.join(process.cwd(), "data")
 const AFFILIATE_DATA_FILE = path.join(DATA_DIR, "affiliate-data.json")
-const CACHE_DURATION = 30 * 60 * 1000 // 30 minutes in milliseconds
 
 export class LocalAffiliateService {
   private static instance: LocalAffiliateService
@@ -157,7 +157,7 @@ export class LocalAffiliateService {
     return found.length > 0 ? found : ["crypto", "paypal"]
   }
 
-  async getResellersData(affiliateCode = "keyempire"): Promise<{ [productName: string]: ProductResellers }> {
+  async getResellersData(affiliateCode = DEFAULT_AFFILIATE_CODE): Promise<{ [productName: string]: ProductResellers }> {
     try {
       const data = await this.getCachedData()
       const lastUpdated = new Date(data.lastUpdated)
@@ -227,7 +227,7 @@ export class LocalAffiliateService {
     }
   }
 
-  async getProductResellers(productName: string, affiliateCode = "voxlisnet"): Promise<ProductResellers> {
+  async getProductResellers(productName: string, affiliateCode = DEFAULT_AFFILIATE_CODE): Promise<ProductResellers> {
     try {
       const allResellers = await this.getResellersData(affiliateCode)
       const normalizedProductName = productName.toLowerCase()
