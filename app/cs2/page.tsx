@@ -6,7 +6,7 @@ import LoadingScreen from "../../components/loading-screen"
 import AnimatedBackground from "../../components/animated-background"
 import SelectionsHeroSection from "../../components/selections-hero-section"
 import QuickSelectionsGrid from "../../components/quick-selections-grid"
-import ProductsGrid from "../../components/products-grid"
+import ProductsGrid from "../../components/products-grid-cheats"
 import ResellersModal from "../../components/resellers-modal" // Added ResellersModal import
 import { CS2_PRODUCTS_LIST, parsePrice } from "../../lib/cs2-products-data"
 import Image from "next/image"
