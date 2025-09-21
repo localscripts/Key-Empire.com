@@ -1,12 +1,11 @@
 import type { LocalAffiliateData, ProductResellers } from "../types/affiliate"
 import { RUST_RESELLER_SITES, KNOWN_RUST_CHEATS, RUST_PAYMENT_PATTERNS } from "../data/rust-reseller-sites"
-import { processAffiliateUrl } from "../config/affiliate-config"
+import { processAffiliateUrl, DEFAULT_AFFILIATE_CODE, CACHE_DURATION } from "../config/global-affiliate-config"
 import fs from "fs/promises"
 import path from "path"
 
 const DATA_DIR = path.join(process.cwd(), "data")
 const RUST_DATA_FILE = path.join(DATA_DIR, "rust-affiliate-data.json")
-const CACHE_DURATION = 3 * 60 * 1000 // 3 minutes
 
 export class RustAffiliateService {
   private static instance: RustAffiliateService
@@ -154,7 +153,9 @@ export class RustAffiliateService {
     return found.length > 0 ? found : ["crypto", "paypal"]
   }
 
-  async getRustResellersData(affiliateCode = "voxlisnet"): Promise<{ [productName: string]: ProductResellers }> {
+  async getRustResellersData(
+    affiliateCode = DEFAULT_AFFILIATE_CODE,
+  ): Promise<{ [productName: string]: ProductResellers }> {
     try {
       const data = await this.getCachedData()
       const lastUpdated = new Date(data.lastUpdated)
@@ -223,7 +224,10 @@ export class RustAffiliateService {
     }
   }
 
-  async getRustProductResellers(productName: string, affiliateCode = "voxlisnet"): Promise<ProductResellers> {
+  async getRustProductResellers(
+    productName: string,
+    affiliateCode = DEFAULT_AFFILIATE_CODE,
+  ): Promise<ProductResellers> {
     try {
       const allResellers = await this.getRustResellersData(affiliateCode)
       const normalizedProductName = productName.toLowerCase()
