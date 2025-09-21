@@ -157,7 +157,7 @@ export class LocalAffiliateService {
     return found.length > 0 ? found : ["crypto", "paypal"]
   }
 
-  async getResellersData(affiliateCode = "voxlisnet"): Promise<{ [productName: string]: ProductResellers }> {
+  async getResellersData(affiliateCode = "keyempire"): Promise<{ [productName: string]: ProductResellers }> {
     try {
       const data = await this.getCachedData()
       const lastUpdated = new Date(data.lastUpdated)
