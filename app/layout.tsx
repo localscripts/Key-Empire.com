@@ -17,21 +17,7 @@ export const metadata: Metadata = {
   // Theme color for mobile browsers and Discord
   themeColor: "#80E26F",
 
-  // Icons (let Next.js generate the <link> tags)
-  icons: {
-    icon: [
-      { url: "/favicon.ico" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-    ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
-    shortcut: ["/favicon.ico"],
-  },
-
-  // Optional: PWA manifest
-  manifest: "/site.webmanifest",
-
-  // Open Graph
+  // Open Graph tags for Discord, Facebook, etc.
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -51,7 +37,7 @@ export const metadata: Metadata = {
     ],
   },
 
-  // Twitter Card
+  // Twitter Card tags
   twitter: {
     card: "summary_large_image",
     site: "@KeyEmpire",
@@ -62,7 +48,7 @@ export const metadata: Metadata = {
     images: ["/images/key-empire-banner.png"],
   },
 
-  // Robots
+  // Additional meta tags
   robots: {
     index: true,
     follow: true,
@@ -82,8 +68,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        {/* Optional: these are now covered by `metadata.themeColor` and icons.
-            Keep only what isn't covered by Metadata (like this inline font style). */}
         <style>{`
 html {
   font-family: ${GeistSans.style.fontFamily};
