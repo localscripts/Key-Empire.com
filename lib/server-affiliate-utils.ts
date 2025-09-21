@@ -1,4 +1,5 @@
 import { cookies } from "next/headers"
+import { DEFAULT_AFFILIATE_CODE } from "./config/global-affiliate-config"
 
 /**
  * Server-side utility to get affiliate code from cookies or URL parameters
@@ -22,5 +23,5 @@ export function getAffiliateCode(searchParams?: URLSearchParams, request?: Reque
     }
   } catch (error) {}
 
-  return "keyempire"
+  return DEFAULT_AFFILIATE_CODE
 }
