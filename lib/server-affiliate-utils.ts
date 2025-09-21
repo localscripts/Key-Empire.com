@@ -22,5 +22,5 @@ export function getAffiliateCode(searchParams?: URLSearchParams, request?: Reque
     }
   } catch (error) {}
 
-  return "voxlisnet"
+  return "keyempire"
 }
