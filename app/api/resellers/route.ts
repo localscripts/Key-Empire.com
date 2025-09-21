@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const resellers = await affiliateService.getResellersData(affiliateCode)
 
     // Track the click for analytics - commented out until trackClick method is implemented
-    // if (affiliateCode !== "voxlisnet") {
+    // if (affiliateCode !== "keyempire") {
     //   await affiliateService.trackClick(affiliateCode)
     // }
 
