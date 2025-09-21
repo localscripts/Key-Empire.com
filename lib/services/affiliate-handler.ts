@@ -1,13 +1,16 @@
-import { AFFILIATE_CONFIG, processAffiliateUrl, getResellerConfig } from "@/lib/config/affiliate-config"
+import {
+  DEFAULT_AFFILIATE_CODE,
+  GLOBAL_RESELLERS,
+  processAffiliateUrl,
+  getResellerConfig,
+} from "@/lib/config/global-affiliate-config"
 
 export class AffiliateHandler {
   private static instance: AffiliateHandler
   private currentAffiliateCode: string
-  private exitHandlerAdded = false
 
   private constructor() {
     this.currentAffiliateCode = ""
-    this.setupExitHandler()
   }
 
   static getInstance(): AffiliateHandler {
@@ -30,16 +33,15 @@ export class AffiliateHandler {
     return null
   }
 
-  // Get current affiliate code (now reads from cookies)
+  // Get current affiliate code (now uses centralized default)
   getCurrentAffiliateCode(): string {
     const cookieCode = this.getAffiliateCodeFromCookies()
     if (cookieCode) {
       return cookieCode
     }
 
-    // Fallback to first reseller's default if no cookie
-    const firstReseller = AFFILIATE_CONFIG.resellers[0]
-    return firstReseller?.defaultAffiliate || "keyempire"
+    // Use centralized default affiliate code
+    return DEFAULT_AFFILIATE_CODE
   }
 
   // Set the current affiliate code and store in cookies
@@ -78,9 +80,9 @@ export class AffiliateHandler {
     } catch (error) {}
   }
 
-  // Get all configured resellers
+  // Get all configured resellers (now uses centralized config)
   getAllResellers() {
-    return AFFILIATE_CONFIG.resellers
+    return GLOBAL_RESELLERS
   }
 
   // Validate affiliate code format
@@ -88,20 +90,10 @@ export class AffiliateHandler {
     return /^[a-zA-Z0-9_-]{3,20}$/.test(code)
   }
 
-  clearAffiliateCode(): void {
+  removeAffiliateCookie(): void {
     if (typeof window !== "undefined") {
-      document.cookie = "affiliate_code=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax"
-    }
-  }
-
-  private setupExitHandler(): void {
-    if (typeof window !== "undefined" && !this.exitHandlerAdded) {
-      const handleBeforeUnload = () => {
-        this.clearAffiliateCode()
-      }
-
-      window.addEventListener("beforeunload", handleBeforeUnload)
-      this.exitHandlerAdded = true
+      // Set cookie with past expiration date to remove it
+      document.cookie = `affiliate_code=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`
     }
   }
 }
