@@ -50,8 +50,8 @@ export default function AffiliateInfoModal({ isOpen, onClose, onStartEarning }: 
         <div
           className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700"
           style={{
-            opacity: isClosing ? 0 : 1,
-            transform: isClosing ? "translateY(30px) scale(0.8)" : "translateY(0) scale(1)",
+            opacity: isClosing ? 0 : 0,
+            transform: "translateY(30px) scale(0.8)",
             animation: isClosing
               ? "contentFadeOut 0.2s ease-out forwards"
               : `contentPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s forwards`,
@@ -79,8 +79,8 @@ export default function AffiliateInfoModal({ isOpen, onClose, onStartEarning }: 
           <div
             className="text-center bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-4"
             style={{
-              opacity: isClosing ? 0 : 1,
-              transform: isClosing ? "translateY(30px) scale(0.8)" : "translateY(0) scale(1)",
+              opacity: isClosing ? 0 : 0,
+              transform: "translateY(30px) scale(0.8)",
               animation: isClosing
                 ? "contentFadeOut 0.2s ease-out forwards"
                 : `contentPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s forwards`,
@@ -101,8 +101,8 @@ export default function AffiliateInfoModal({ isOpen, onClose, onStartEarning }: 
           <div
             className="grid grid-cols-1 gap-3"
             style={{
-              opacity: isClosing ? 0 : 1,
-              transform: isClosing ? "translateY(30px) scale(0.8)" : "translateY(0) scale(1)",
+              opacity: isClosing ? 0 : 0,
+              transform: "translateY(30px) scale(0.8)",
               animation: isClosing
                 ? "contentFadeOut 0.2s ease-out forwards"
                 : `contentPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s forwards`,
@@ -132,15 +132,24 @@ export default function AffiliateInfoModal({ isOpen, onClose, onStartEarning }: 
               <p className="text-xs text-gray-600 dark:text-gray-300">Dedicated affiliate support team</p>
             </div>
 
-            
+            {/* Additional Feature */}
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Shield className="w-4 h-4 text-red-500" />
+                <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100">Secure Transactions</h4>
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-300">
+                Your transactions are protected by our secure system
+              </p>
+            </div>
           </div>
 
           {/* How It Works */}
           <div
             className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-xl p-4"
             style={{
-              opacity: isClosing ? 0 : 1,
-              transform: isClosing ? "translateY(30px) scale(0.8)" : "translateY(0) scale(1)",
+              opacity: isClosing ? 0 : 0,
+              transform: "translateY(30px) scale(0.8)",
               animation: isClosing
                 ? "contentFadeOut 0.2s ease-out forwards"
                 : `contentPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.45s forwards`,
@@ -189,8 +198,8 @@ export default function AffiliateInfoModal({ isOpen, onClose, onStartEarning }: 
           <div
             className="text-center pt-2"
             style={{
-              opacity: isClosing ? 0 : 1,
-              transform: isClosing ? "translateY(30px) scale(0.8)" : "translateY(0) scale(1)",
+              opacity: isClosing ? 0 : 0,
+              transform: "translateY(30px) scale(0.8)",
               animation: isClosing
                 ? "contentFadeOut 0.2s ease-out forwards"
                 : `contentPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s forwards`,
