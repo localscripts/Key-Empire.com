@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { affiliateHandler } from "@/lib/services/affiliate-handler"
 import { AffiliateManager } from "@/lib/affiliate-utils"
+import { getDynamicDurationOptions } from "@/lib/duration-utils" // Import dynamic duration utilities
 
 interface DurationPricing {
   price: string
@@ -37,14 +38,6 @@ interface ResellersModalProps {
   error: string | null
 }
 
-const durationTypes = [
-  { key: "day1", label: "1 Day" },
-  { key: "day3", label: "3 Days" },
-  { key: "week1", label: "1 Week" },
-  { key: "month1", label: "1 Month" },
-  { key: "year1", label: "1 Year" },
-]
-
 export default function ResellersModal({
   isOpen,
   onClose,
@@ -63,19 +56,7 @@ export default function ResellersModal({
     }
   }, [])
 
-  const getAvailableDurations = () => {
-    const availableDurations = new Set<string>()
-    resellers.forEach((reseller) => {
-      Object.keys(reseller.durations).forEach((key) => {
-        if (reseller.durations[key as keyof typeof reseller.durations]) {
-          availableDurations.add(key)
-        }
-      })
-    })
-    return durationTypes.filter((duration) => availableDurations.has(duration.key))
-  }
-
-  const availableDurationTypes = getAvailableDurations()
+  const availableDurationTypes = resellers && resellers.length > 0 ? getDynamicDurationOptions(resellers) : []
 
   const handleCloseModal = () => {
     setIsClosing(true)
@@ -345,7 +326,7 @@ export default function ResellersModal({
                         </div>
 
                         {availableDurationTypes.map((duration) => {
-                          const durationData = reseller.durations[duration.key as keyof typeof reseller.durations]
+                          const durationData = reseller.durations[duration.key]
                           return (
                             <div key={duration.key} className="text-center">
                               {durationData ? (
@@ -377,7 +358,7 @@ export default function ResellersModal({
                 <div className="lg:hidden space-y-4">
                   {resellers.map((reseller, index) => {
                     const resellerAvailableDurations = availableDurationTypes.filter(
-                      (duration) => reseller.durations[duration.key as keyof typeof reseller.durations],
+                      (duration) => reseller.durations[duration.key],
                     )
 
                     return (
@@ -439,7 +420,7 @@ export default function ResellersModal({
                         <div className="p-4">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {resellerAvailableDurations.map((duration) => {
-                              const durationData = reseller.durations[duration.key as keyof typeof reseller.durations]
+                              const durationData = reseller.durations[duration.key]
                               return (
                                 <div
                                   key={duration.key}
