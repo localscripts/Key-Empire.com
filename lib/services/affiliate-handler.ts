@@ -39,7 +39,7 @@ export class AffiliateHandler {
 
     // Fallback to first reseller's default if no cookie
     const firstReseller = AFFILIATE_CONFIG.resellers[0]
-    return firstReseller?.defaultAffiliate || "voxlisnet"
+    return firstReseller?.defaultAffiliate || "keyempire"
   }
 
   // Set the current affiliate code and store in cookies
