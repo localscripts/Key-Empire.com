@@ -4,13 +4,12 @@ import {
   KNOWN_FORTNITE_CHEATS,
   FORTNITE_PAYMENT_PATTERNS,
 } from "../data/fortnite-reseller-sites"
-import { processAffiliateUrl } from "../config/affiliate-config"
+import { processAffiliateUrl, DEFAULT_AFFILIATE_CODE, CACHE_DURATION } from "../config/global-affiliate-config"
 import fs from "fs/promises"
 import path from "path"
 
 const DATA_DIR = path.join(process.cwd(), "data")
 const FORTNITE_DATA_FILE = path.join(DATA_DIR, "fortnite-affiliate-data.json")
-const CACHE_DURATION = 3 * 60 * 1000 // 3 minutes
 
 export class FortniteAffiliateService {
   private static instance: FortniteAffiliateService
@@ -161,7 +160,9 @@ export class FortniteAffiliateService {
     return found.length > 0 ? found : ["crypto", "paypal"]
   }
 
-  async getFortniteResellersData(affiliateCode = "voxlisnet"): Promise<{ [productName: string]: ProductResellers }> {
+  async getFortniteResellersData(
+    affiliateCode = DEFAULT_AFFILIATE_CODE,
+  ): Promise<{ [productName: string]: ProductResellers }> {
     try {
       const data = await this.getCachedData()
       const lastUpdated = new Date(data.lastUpdated)
@@ -230,7 +231,10 @@ export class FortniteAffiliateService {
     }
   }
 
-  async getFortniteProductResellers(productName: string, affiliateCode = "voxlisnet"): Promise<ProductResellers> {
+  async getFortniteProductResellers(
+    productName: string,
+    affiliateCode = DEFAULT_AFFILIATE_CODE,
+  ): Promise<ProductResellers> {
     try {
       const allResellers = await this.getFortniteResellersData(affiliateCode)
       const normalizedProductName = productName.toLowerCase()
