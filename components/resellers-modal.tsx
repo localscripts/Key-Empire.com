@@ -99,37 +99,17 @@ export default function ResellersModal({
   }, [isOpen])
 
   const PaymentMethodsDisplay = ({ payments, resellerIndex }: { payments: string[]; resellerIndex: number }) => {
-    const maxVisiblePayments = 8 // Show up to 8 payment methods (3+3+2 layout)
-    const visiblePayments = payments.slice(0, maxVisiblePayments)
-    const remainingPayments = payments.slice(maxVisiblePayments)
+    const firstRowPayments = payments.slice(0, 3)
+    const secondRowPayments = payments.slice(3, 5)
+    const remainingPayments = payments.slice(5)
     const hiddenCount = remainingPayments.length
-
-    const getPaymentRows = () => {
-      const rows = []
-      // Row 1: First 3 payments
-      if (visiblePayments.length > 0) {
-        rows.push(visiblePayments.slice(0, 3))
-      }
-      // Row 2: Next 3 payments
-      if (visiblePayments.length > 3) {
-        rows.push(visiblePayments.slice(3, 6))
-      }
-      // Row 3: Last 2 payments + expand button if needed
-      if (visiblePayments.length > 6) {
-        const lastRowPayments = visiblePayments.slice(6, 8)
-        rows.push(lastRowPayments)
-      }
-      return rows
-    }
-
-    const paymentRows = getPaymentRows()
 
     return (
       <div className="relative">
-        <div className="space-y-1">
-          {paymentRows.map((row, rowIndex) => (
-            <div key={rowIndex} className="flex flex-wrap gap-1">
-              {row.map((payment, idx) => (
+        <div className="space-y-2">
+          {firstRowPayments.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {firstRowPayments.map((payment, idx) => (
                 <span
                   key={idx}
                   className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-xs rounded-md text-gray-700 dark:text-gray-300 whitespace-nowrap"
@@ -137,7 +117,20 @@ export default function ResellersModal({
                   {payment}
                 </span>
               ))}
-              {rowIndex === paymentRows.length - 1 && hiddenCount > 0 && (
+            </div>
+          )}
+
+          {secondRowPayments.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {secondRowPayments.map((payment, idx) => (
+                <span
+                  key={idx}
+                  className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-xs rounded-md text-gray-700 dark:text-gray-300 whitespace-nowrap"
+                >
+                  {payment}
+                </span>
+              ))}
+              {hiddenCount > 0 && (
                 <button
                   className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-xs rounded-md text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all duration-200 whitespace-nowrap cursor-pointer"
                   onMouseEnter={() => setShowPaymentsTooltip(resellerIndex)}
@@ -147,7 +140,7 @@ export default function ResellersModal({
                 </button>
               )}
             </div>
-          ))}
+          )}
         </div>
 
         {showPaymentsTooltip === resellerIndex && (
@@ -159,7 +152,7 @@ export default function ResellersModal({
             <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Additional Payment Methods:
             </div>
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-2">
               {remainingPayments.map((payment, idx) => (
                 <span
                   key={idx}
