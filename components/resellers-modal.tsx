@@ -222,7 +222,7 @@ export default function ResellersModal({
           </div>
 
           <div
-            className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 md:p-4 lg:p-6 mt-6"
+            className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 md:p-4 lg:p-6 mt-8"
             style={{
               opacity: isClosing ? 0 : 0,
               animation: isClosing ? "fadeOut 0.1s ease-out forwards" : "fadeIn 0.3s ease-out 0.25s forwards",
@@ -265,7 +265,7 @@ export default function ResellersModal({
                     ))}
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-3 mt-6">
                     {resellers.map((reseller, index) => (
                       <div
                         key={index}
