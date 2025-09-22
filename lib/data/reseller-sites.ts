@@ -9,6 +9,10 @@ export const RESELLER_SITES: ResellerSite[] = [
     url: "https://raw.githubusercontent.com/ilyaqqqq/keyempire/refs/heads/main/endpoint.json",
     verified: true,
   },
+  {
+    url: "https://raw.githubusercontent.com/bloxproducts/products/refs/heads/main/keyempire.json",
+    verified: true,
+  },
 ]
 
 export const KNOWN_EXPLOITS = [
