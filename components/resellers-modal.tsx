@@ -265,7 +265,7 @@ export default function ResellersModal({
                     ))}
                   </div>
 
-                  <div className="space-y-3 mt-6">
+                  <div className="space-y-3 mt-4">
                     {resellers.map((reseller, index) => (
                       <div
                         key={index}
