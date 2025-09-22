@@ -8,6 +8,7 @@ import SelectionsHeroSection from "../../components/selections-hero-section"
 import QuickSelectionsGrid from "../../components/quick-selections-grid"
 import ProductsGrid from "../../components/products-grid"
 import ResellersModal from "../../components/resellers-modal" // Added ResellersModal import
+import CrypticModal from "../../components/cryptic-modal" // Added CrypticModal import
 import { PRODUCTS_LIST, parsePrice } from "../../lib/products-data"
 import Image from "next/image"
 import { getPaymentMethodIcon } from "../../lib/payment-methods" // Updated to use new simplified payment methods system
@@ -633,6 +634,12 @@ const SelectionsPage = () => {
           />
         </div>
       </main>
+
+      <CrypticModal
+        isOpen={showCrypticModal}
+        onClose={() => setShowCrypticModal(false)}
+        onPlatformSelect={handleCrypticPlatformSelect}
+      />
 
       <ResellersModal
         isOpen={showResellersModal}
