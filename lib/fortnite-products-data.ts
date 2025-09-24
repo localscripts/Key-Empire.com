@@ -9,40 +9,22 @@ export interface FortniteProduct {
 
 export const FORTNITE_PRODUCTS_LIST: FortniteProduct[] = [
   {
-    title: "Fortnite Aimbot",
+    title: "Reported Spoofer",
     price: "$12.99",
     resellers: "20+",
-    image: "/images/fortnite-aimbot.png",
+    image: "/images/unknown.png",
   },
   {
-    title: "Fortnite ESP",
+    title: "Klar",
     price: "$8.99",
     resellers: "16+",
-    image: "/images/fortnite-esp.png",
+    image: "/images/unknown.png",
   },
   {
-    title: "Fortnite Wallhack",
+    title: "FN External",
     price: "$10.99",
     resellers: "18+",
-    image: "/images/fortnite-wallhack.png",
-  },
-  {
-    title: "Fortnite Radar",
-    price: "$6.99",
-    resellers: "12+",
-    image: "/images/fortnite-radar.png",
-  },
-  {
-    title: "Fortnite Triggerbot",
-    price: "$7.99",
-    resellers: "14+",
-    image: "/images/fortnite-triggerbot.png",
-  },
-  {
-    title: "Fortnite Building Bot",
-    price: "$15.99",
-    resellers: "10+",
-    image: "/images/fortnite-building.png",
+    image: "/images/unknown.png",
   },
 ]
 
