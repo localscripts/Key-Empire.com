@@ -539,13 +539,22 @@ export default function PanelPage() {
                     {(Object.keys(platformInfo) as Platform[]).map((platform) => (
                       <button
                         key={platform}
-                        className={`platform-btn-text ${selectedPlatform === platform ? "selected" : ""}`}
+                        className={`platform-btn-with-logo ${selectedPlatform === platform ? "selected" : ""}`}
                         onClick={() => {
                           setSelectedPlatform(platform)
                           setSelectedProduct(null)
                           showToast("Platform Selected!", `${platformInfo[platform].name} platform selected.`)
                         }}
                       >
+                        <div className="platform-logo-container">
+                          <Image
+                            src={platformInfo[platform].logo || "/placeholder.svg"}
+                            alt={platformInfo[platform].name}
+                            width={32}
+                            height={32}
+                            className="platform-logo-image"
+                          />
+                        </div>
                         <span className="platform-name-text">{platformInfo[platform].name}</span>
                       </button>
                     ))}
