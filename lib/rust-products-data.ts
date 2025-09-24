@@ -9,40 +9,52 @@ export interface RustProduct {
 
 export const RUST_PRODUCTS_LIST: RustProduct[] = [
   {
-    title: "Rust Aimbot",
+    title: "RUSTSENSE-Script",
     price: "$14.99",
     resellers: "22+",
-    image: "/images/rust-aimbot.png",
+    image: "/images/unknown.png",
   },
   {
-    title: "Rust ESP",
+    title: "Fluent",
     price: "$11.99",
     resellers: "19+",
-    image: "/images/rust-esp.png",
+    image: "/images/unknown.png",
   },
   {
-    title: "Rust Wallhack",
+    title: "Radiance External",
     price: "$13.99",
     resellers: "17+",
-    image: "/images/rust-wallhack.png",
+    image: "/images/unknown.png",
   },
   {
-    title: "Rust Radar",
+    title: "Reported Spoofer",
     price: "$8.99",
     resellers: "15+",
-    image: "/images/rust-radar.png",
+    image: "/images/unknown.png",
   },
   {
-    title: "Rust No Recoil",
+    title: "Quantum Rust Internal",
     price: "$9.99",
     resellers: "13+",
-    image: "/images/rust-norecoil.png",
+    image: "/images/unknown.png",
   },
   {
-    title: "Rust Speedhack",
+    title: "Exception Spoofer",
     price: "$12.99",
     resellers: "11+",
-    image: "/images/rust-speedhack.png",
+    image: "/images/unknown.png",
+  },
+    {
+    title: "Mek Rust Cheat External",
+    price: "$9.99",
+    resellers: "13+",
+    image: "/images/unknown.png",
+  },
+  {
+    title: "Rust External Cheat (Ancient)",
+    price: "$12.99",
+    resellers: "11+",
+    image: "/images/unknown.png",
   },
 ]
 
