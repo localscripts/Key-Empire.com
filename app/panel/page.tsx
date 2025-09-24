@@ -81,6 +81,10 @@ export default function PanelPage() {
   const [customProduct, setCustomProduct] = useState<CustomProduct>({
     title: "",
   })
+  const [showTableModal, setShowTableModal] = useState(false)
+  const [tableData, setTableData] = useState("")
+  const [parsedTableData, setParsedTableData] = useState<string[][]>([])
+  const [tableHeaders, setTableHeaders] = useState<string[]>([])
   const [toasts, setToasts] = useState<
     Array<{ id: string; title: string; description: string; type: "success" | "error" }>
   >([])
@@ -211,6 +215,10 @@ export default function PanelPage() {
     setShowCrypticModal(false)
     setSelectedCrypticPlatform("")
     setCustomProduct({ title: "" })
+    setTableData("")
+    setParsedTableData([])
+    setTableHeaders([])
+    setShowTableModal(false)
     showToast("Builder Reset!", "All fields have been cleared.")
   }
 
@@ -441,6 +449,120 @@ export default function PanelPage() {
     }
   }
 
+  const saveTableData = () => {
+    if (!tableData.trim()) {
+      showToast("No Data", "Please paste your JSON data first.", "error")
+      return
+    }
+
+    try {
+      const jsonData = JSON.parse(tableData.trim())
+
+      const companyName = Object.keys(jsonData)[0]
+      const companyData = jsonData[companyName]
+      const companyPfp = companyData.pfp || ""
+
+      const importedProducts: ProductWithDurations[] = []
+
+      Object.keys(companyData).forEach((productKey) => {
+        if (productKey === "pfp") return
+
+        const productData = companyData[productKey]
+        if (!productData || typeof productData !== "object") return
+
+        const durations: Duration[] = []
+        const payments = productData.payments || ["paypal"]
+
+        Object.keys(productData).forEach((key) => {
+          if (key === "payments") return
+
+          const durationData = productData[key]
+          if (durationData && typeof durationData === "object" && durationData.price && durationData.url) {
+            durations.push({
+              id: generateId(),
+              duration: key === "lifetime" ? "lifetime" : key,
+              price: durationData.price,
+              url: durationData.url,
+            })
+          }
+        })
+
+        const newProduct: ProductWithDurations = {
+          id: generateId(),
+          name: productKey.toLowerCase(),
+          imageUrl: "/custom-product.jpg",
+          payments: payments,
+          durations: durations,
+          platform: selectedPlatform,
+          isCustom: true,
+        }
+
+        importedProducts.push(newProduct)
+      })
+
+      setData({
+        resellerName: companyName,
+        resellerPfp: companyPfp,
+        products: importedProducts,
+      })
+
+      showToast("JSON Imported!", `Successfully imported ${importedProducts.length} products from "${companyName}".`)
+      setShowTableModal(false)
+      setTableData("")
+      setParsedTableData([])
+      setTableHeaders([])
+    } catch (error) {
+      showToast("Invalid JSON", "Please check your JSON format and try again.", "error")
+    }
+  }
+
+  const openTableModal = () => {
+    setShowTableModal(true)
+    setTableData("")
+    setParsedTableData([])
+    setTableHeaders([])
+  }
+
+  const handleTableDataChange = (value: string) => {
+    setTableData(value)
+  }
+
+  const addTableRow = () => {
+    const columnCount = tableHeaders.length > 0 ? tableHeaders.length : 4
+    const newRow = new Array(columnCount).fill("")
+    setParsedTableData((prev) => [...prev, newRow])
+  }
+
+  const removeTableRow = (index: number) => {
+    setParsedTableData((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const updateTableCell = (rowIndex: number, colIndex: number, value: string) => {
+    setParsedTableData((prev) =>
+      prev.map((row, rIndex) =>
+        rIndex === rowIndex ? row.map((cell, cIndex) => (cIndex === colIndex ? value : cell)) : row,
+      ),
+    )
+  }
+
+  const updateTableHeader = (index: number, value: string) => {
+    setTableHeaders((prev) => prev.map((header, i) => (i === index ? value : header)))
+  }
+
+  const addTableColumn = () => {
+    setTableHeaders((prev) => [...prev, "New Column"])
+    setParsedTableData((prev) => prev.map((row) => [...row, ""]))
+  }
+
+  const removeTableColumn = (colIndex: number) => {
+    if (tableHeaders.length <= 1) {
+      showToast("Cannot Remove Column", "Table must have at least one column.", "error")
+      return
+    }
+    setTableHeaders((prev) => prev.filter((_, i) => i !== colIndex))
+    setParsedTableData((prev) => prev.map((row) => row.filter((_, i) => i !== colIndex)))
+  }
+
   return (
     <div className="container">
       <h1 className="main-title">JSON Builder for Reseller Products</h1>
@@ -523,6 +645,29 @@ export default function PanelPage() {
           {/* Step 2: Product Management */}
           {currentStep === 2 && (
             <div className="left-section">
+              <div className="card compact-card">
+                <div className="card-header">
+                  <h2 className="card-title">
+                    Table Management
+                    <div className="tooltip">
+                      <Info className="icon info-icon" />
+                      <span className="tooltip-text">Import existing table data to quickly add products</span>
+                    </div>
+                  </h2>
+                </div>
+                <div className="card-content">
+                  <div className="table-actions">
+                    <button className="btn btn-primary" onClick={openTableModal}>
+                      <Edit className="icon" />
+                      Edit Table
+                    </button>
+                  </div>
+                  <p className="form-help">
+                    Paste your existing table data to quickly import products, payment methods, and durations.
+                  </p>
+                </div>
+              </div>
+
               <div className="card compact-card">
                 <div className="card-header">
                   <h2 className="card-title">
@@ -761,6 +906,54 @@ export default function PanelPage() {
           </div>
         </div>
       </div>
+
+      {showTableModal && (
+        <div className="modal-overlay" onClick={() => setShowTableModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Import JSON Data</h3>
+              <button className="modal-close" onClick={() => setShowTableModal(false)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Paste Your JSON Data</label>
+                <textarea
+                  className="table-textarea"
+                  placeholder={`Paste your JSON data here:
+{
+  "Something": {
+    "pfp": "https://example.com/profile.png",
+    "matcha": {
+      "payments": ["paypal", "stripe", "crypto"],
+      "lifetime": {
+        "price": "12.5",
+        "url": "https://example.com/product/something"
+      }
+    }
+  }
+}`}
+                  value={tableData}
+                  onChange={(e) => setTableData(e.target.value)}
+                  rows={12}
+                />
+                <p className="form-help">
+                  Paste your JSON data. This will clear existing products and import the new ones.
+                </p>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={() => setShowTableModal(false)}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" disabled={!tableData.trim()} onClick={saveTableData}>
+                Import JSON Data
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showCustomProductModal && (
         <div className="modal-overlay" onClick={() => setShowCustomProductModal(false)}>
