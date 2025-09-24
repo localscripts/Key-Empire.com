@@ -2,10 +2,37 @@
 
 import type React from "react"
 import { useState, useCallback } from "react"
-import { PRODUCTS_LIST, type ProductData } from "@/lib/products-data"
+import { PRODUCTS_LIST } from "@/lib/products-data"
+import { CS2_PRODUCTS_LIST } from "@/lib/cs2-products-data"
+import { FORTNITE_PRODUCTS_LIST } from "@/lib/fortnite-products-data"
+import { RUST_PRODUCTS_LIST } from "@/lib/rust-products-data"
 import { PAYMENT_METHODS_LIST } from "@/lib/payment-methods"
-import { Trash2, Edit, ArrowRight, ArrowLeft, RotateCcw, Copy, Check, Info, Loader2 } from "lucide-react"
+import {
+  Trash2,
+  Edit,
+  ArrowRight,
+  ArrowLeft,
+  RotateCcw,
+  Copy,
+  Check,
+  Info,
+  Loader2,
+  Gamepad2,
+  Plus,
+  X,
+} from "lucide-react"
 import Image from "next/image"
+import type { Platform } from "@/types/platform" // Declare the Platform type
+
+type UnifiedProduct = {
+  id: string
+  title: string
+  image: string
+  price: string
+  resellers: string
+  platform: Platform
+  isCustom?: boolean
+}
 
 interface Duration {
   id: string
@@ -20,12 +47,18 @@ interface ProductWithDurations {
   imageUrl: string
   payments: string[]
   durations: Duration[]
+  platform: Platform
+  isCustom?: boolean
 }
 
 interface JsonBuilderData {
   resellerName: string
   resellerPfp: string
   products: ProductWithDurations[]
+}
+
+interface CustomProduct {
+  title: string
 }
 
 export default function PanelPage() {
@@ -35,15 +68,79 @@ export default function PanelPage() {
     resellerPfp: "",
     products: [],
   })
-  const [selectedProduct, setSelectedProduct] = useState<ProductData | null>(null)
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform>("roblox")
+  const [selectedProduct, setSelectedProduct] = useState<UnifiedProduct | null>(null)
   const [selectedPayments, setSelectedPayments] = useState<string[]>([])
   const [editingPaymentProductId, setEditingPaymentProductId] = useState<string | null>(null)
   const [tempPaymentInput, setTempPaymentInput] = useState<string[]>([])
   const [isAddingProduct, setIsAddingProduct] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
+  const [showCustomProductModal, setShowCustomProductModal] = useState(false)
+  const [showCrypticModal, setShowCrypticModal] = useState(false)
+  const [selectedCrypticPlatform, setSelectedCrypticPlatform] = useState("")
+  const [customProduct, setCustomProduct] = useState<CustomProduct>({
+    title: "",
+  })
   const [toasts, setToasts] = useState<
     Array<{ id: string; title: string; description: string; type: "success" | "error" }>
   >([])
+
+  const getProductsByPlatform = useCallback((platform: Platform): UnifiedProduct[] => {
+    switch (platform) {
+      case "roblox":
+        return PRODUCTS_LIST.filter((p) => !p.hide).map((p) => ({
+          id: p.id.toString(),
+          title: p.title,
+          image: p.image,
+          price: p.price,
+          resellers: p.resellers,
+          platform: "roblox" as Platform,
+        }))
+      case "cs2":
+        return CS2_PRODUCTS_LIST.map((p, index) => ({
+          id: `cs2-${index}`,
+          title: p.title,
+          image: p.image,
+          price: p.price,
+          resellers: p.resellers,
+          platform: "cs2" as Platform,
+        }))
+      case "fortnite":
+        return FORTNITE_PRODUCTS_LIST.map((p, index) => ({
+          id: `fortnite-${index}`,
+          title: p.title,
+          image: p.image,
+          price: p.price,
+          resellers: p.resellers,
+          platform: "fortnite" as Platform,
+        }))
+      case "rust":
+        return RUST_PRODUCTS_LIST.map((p, index) => ({
+          id: `rust-${index}`,
+          title: p.title,
+          image: p.image,
+          price: p.price,
+          resellers: p.resellers,
+          platform: "rust" as Platform,
+        }))
+      default:
+        return []
+    }
+  }, [])
+
+  const platformInfo = {
+    roblox: { name: "Roblox", logo: "/images/Roblox.png", color: "bg-purple-500" },
+    cs2: { name: "Counter-Strike 2", logo: "/images/CS2.png", color: "bg-orange-500" },
+    fortnite: { name: "Fortnite", logo: "/images/fortnite-logo.png", color: "bg-blue-500" },
+    rust: { name: "Rust", logo: "/images/rust-logo.png", color: "bg-red-500" },
+  }
+
+  const crypticPlatforms = [
+    { id: "windows", name: "Windows" },
+    { id: "macos", name: "macOS" },
+    { id: "ios", name: "iOS" },
+    { id: "android", name: "Android" },
+  ]
 
   const showToast = useCallback((title: string, description: string, type: "success" | "error" = "success") => {
     const id = Math.random().toString(36).substr(2, 9)
@@ -57,6 +154,7 @@ export default function PanelPage() {
     return data.resellerName.trim() && data.resellerPfp.trim()
   }, [data.resellerName, data.resellerPfp])
 
+  // Updated validateAddProduct to not require selectedProduct for custom products
   const validateAddProduct = useCallback(() => {
     return selectedProduct && selectedPayments.length > 0
   }, [selectedProduct, selectedPayments])
@@ -64,6 +162,10 @@ export default function PanelPage() {
   const validateStep2 = useCallback(() => {
     return data.products.length > 0
   }, [data.products])
+
+  const validateCustomProduct = useCallback(() => {
+    return customProduct.title.trim()
+  }, [customProduct])
 
   const parseDurationInput = (input: string): string => {
     const lowerInput = input.toLowerCase().trim()
@@ -104,9 +206,15 @@ export default function PanelPage() {
     setSelectedPayments([])
     setEditingPaymentProductId(null)
     setTempPaymentInput([])
+    setSelectedPlatform("roblox")
+    setShowCustomProductModal(false)
+    setShowCrypticModal(false)
+    setSelectedCrypticPlatform("")
+    setCustomProduct({ title: "" })
     showToast("Builder Reset!", "All fields have been cleared.")
   }
 
+  // Updated addProduct to not handle custom products directly
   const addProduct = async () => {
     if (!validateStep1()) {
       showToast("Missing Reseller Info", "Please fill in Reseller Name and Profile Picture URL first.", "error")
@@ -118,8 +226,10 @@ export default function PanelPage() {
       return
     }
 
-    if (data.products.some((p) => p.name.toLowerCase() === selectedProduct!.title.toLowerCase())) {
-      showToast("Product Already Added", `'${selectedProduct!.title}' is already in your list.`, "error")
+    const productToAdd = selectedProduct!
+
+    if (data.products.some((p) => p.name.toLowerCase() === productToAdd.title.toLowerCase())) {
+      showToast("Product Already Added", `'${productToAdd.title}' is already in your list.`, "error")
       return
     }
 
@@ -127,10 +237,12 @@ export default function PanelPage() {
 
     const newProduct: ProductWithDurations = {
       id: generateId(),
-      name: selectedProduct!.title.toLowerCase(),
-      imageUrl: selectedProduct!.image,
+      name: productToAdd.title.toLowerCase(),
+      imageUrl: productToAdd.image,
       payments: [...selectedPayments],
       durations: [],
+      platform: productToAdd.platform,
+      isCustom: productToAdd.isCustom,
     }
 
     setData((prev) => ({
@@ -141,6 +253,92 @@ export default function PanelPage() {
     setSelectedProduct(null)
     setSelectedPayments([])
     showToast("Product Added!", `'${newProduct.name}' has been added.`)
+
+    setTimeout(() => {
+      setIsAddingProduct(false)
+    }, 500)
+  }
+
+  const addCustomProduct = async () => {
+    if (!validateStep1()) {
+      showToast("Missing Reseller Info", "Please fill in Reseller Name and Profile Picture URL first.", "error")
+      return
+    }
+
+    if (!validateCustomProduct()) {
+      showToast("Missing Product Name", "Please enter a product name.", "error")
+      return
+    }
+
+    if (data.products.some((p) => p.name.toLowerCase() === customProduct.title.toLowerCase())) {
+      showToast("Product Already Added", `'${customProduct.title}' is already in your list.`, "error")
+      return
+    }
+
+    setIsAddingProduct(true)
+
+    const newProduct: ProductWithDurations = {
+      id: generateId(),
+      name: customProduct.title.toLowerCase(),
+      imageUrl: "/custom-product.jpg",
+      payments: ["paypal"], // Default payment method for custom products
+      durations: [],
+      platform: selectedPlatform, // Default platform for custom products
+      isCustom: true,
+    }
+
+    setData((prev) => ({
+      ...prev,
+      products: [...prev.products, newProduct],
+    }))
+
+    setCustomProduct({ title: "" })
+    setShowCustomProductModal(false)
+    showToast("Custom Product Added!", `'${newProduct.name}' has been added.`)
+
+    setTimeout(() => {
+      setIsAddingProduct(false)
+    }, 500)
+  }
+
+  const addCrypticProduct = async () => {
+    if (!validateStep1()) {
+      showToast("Missing Reseller Info", "Please fill in Reseller Name and Profile Picture URL first.", "error")
+      return
+    }
+
+    if (!selectedCrypticPlatform) {
+      showToast("Missing Platform", "Please select a platform for Cryptic.", "error")
+      return
+    }
+
+    const crypticName = `cryptic-${selectedCrypticPlatform}`
+
+    if (data.products.some((p) => p.name.toLowerCase() === crypticName.toLowerCase())) {
+      showToast("Product Already Added", `'${crypticName}' is already in your list.`, "error")
+      return
+    }
+
+    setIsAddingProduct(true)
+
+    const newProduct: ProductWithDurations = {
+      id: generateId(),
+      name: crypticName.toLowerCase(),
+      imageUrl: "/images/cryptic.png",
+      payments: ["paypal"], // Default payment method for cryptic products
+      durations: [],
+      platform: selectedPlatform,
+      isCustom: false,
+    }
+
+    setData((prev) => ({
+      ...prev,
+      products: [...prev.products, newProduct],
+    }))
+
+    setSelectedCrypticPlatform("")
+    setShowCrypticModal(false)
+    showToast("Cryptic Product Added!", `'${crypticName}' has been added.`)
 
     setTimeout(() => {
       setIsAddingProduct(false)
@@ -227,7 +425,7 @@ export default function PanelPage() {
     return JSON.stringify(finalJson, null, 2)
   }
 
-  const copyJson = async () => {
+  async function copyJson() {
     const jsonText = generateJsonOutput()
 
     try {
@@ -325,7 +523,40 @@ export default function PanelPage() {
           {/* Step 2: Product Management */}
           {currentStep === 2 && (
             <div className="left-section">
-              <div className="card">
+              <div className="card compact-card">
+                <div className="card-header">
+                  <h2 className="card-title">
+                    <Gamepad2 className="icon" />
+                    Select Platform
+                    <div className="tooltip">
+                      <Info className="icon info-icon" />
+                      <span className="tooltip-text">Choose the gaming platform for your products</span>
+                    </div>
+                  </h2>
+                </div>
+                <div className="card-content">
+                  <div className="platform-grid-compact">
+                    {(Object.keys(platformInfo) as Platform[]).map((platform) => (
+                      <button
+                        key={platform}
+                        className={`platform-btn-text ${selectedPlatform === platform ? "selected" : ""}`}
+                        onClick={() => {
+                          setSelectedPlatform(platform)
+                          setSelectedProduct(null)
+                          showToast("Platform Selected!", `${platformInfo[platform].name} platform selected.`)
+                        }}
+                      >
+                        <span className="platform-name-text">{platformInfo[platform].name}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="form-help">
+                    Selected Platform: <strong>{platformInfo[selectedPlatform].name}</strong>
+                  </p>
+                </div>
+              </div>
+
+              <div className="card compact-card">
                 <div className="card-header">
                   <h2 className="card-title">
                     Add New Product
@@ -337,35 +568,48 @@ export default function PanelPage() {
                 </div>
                 <div className="card-content">
                   <div className="form-group">
-                    <label>Select Product</label>
-                    <div className="product-grid">
-                      {PRODUCTS_LIST.filter((product) => !product.hide).map((product) => (
+                    <label>Select {platformInfo[selectedPlatform].name} Product</label>
+                    <div className="product-grid-compact">
+                      {getProductsByPlatform(selectedPlatform).map((product) => (
                         <div
                           key={product.id}
-                          className={`product-item ${selectedProduct?.id === product.id ? "selected" : ""}`}
+                          className={`product-item-compact ${selectedProduct?.id === product.id ? "selected" : ""}`}
                           onClick={() => {
-                            setSelectedProduct(product)
-                            showToast("Product Selected!", `'${product.title}' has been selected.`)
+                            if (product.title.toLowerCase() === "cryptic") {
+                              setShowCrypticModal(true)
+                            } else {
+                              setSelectedProduct(product)
+                              showToast("Product Selected!", `'${product.title}' has been selected.`)
+                            }
                           }}
                         >
                           <Image
-                            src={product.image || "/placeholder.svg?height=64&width=64&query=product"}
+                            src={product.image || "/placeholder.svg?height=48&width=48&query=product"}
                             alt={product.title}
-                            width={64}
-                            height={64}
+                            width={48}
+                            height={48}
                             onError={(e) => {
                               const target = e.target as HTMLImageElement
                               target.src = "/diverse-products-still-life.png"
                             }}
                           />
-                          <span>{product.title}</span>
+                          <span className="product-name-compact">{product.title}</span>
                         </div>
                       ))}
+                      <div
+                        className="product-item-compact add-product-btn"
+                        onClick={() => setShowCustomProductModal(true)}
+                      >
+                        <div className="add-product-icon">
+                          <Plus className="w-6 h-6" />
+                        </div>
+                        <span className="product-name-compact">Add Product</span>
+                      </div>
                     </div>
                     <p className="form-help">
                       {selectedProduct
                         ? `Selected Product: ${selectedProduct.title}`
-                        : "Please select a product from the list above."}
+                        : `Please select a ${platformInfo[selectedPlatform].name} product from the list above.`}
                     </p>
                   </div>
 
@@ -429,6 +673,7 @@ export default function PanelPage() {
                           setTempPaymentInput={setTempPaymentInput}
                           setData={setData}
                           showToast={showToast}
+                          platformInfo={platformInfo}
                         />
                       ))}
                     </div>
@@ -508,6 +753,101 @@ export default function PanelPage() {
         </div>
       </div>
 
+      {showCustomProductModal && (
+        <div className="modal-overlay" onClick={() => setShowCustomProductModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Add Custom Product</h3>
+              <button className="modal-close" onClick={() => setShowCustomProductModal(false)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Product Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Custom Cheat Tool"
+                  value={customProduct.title}
+                  onChange={(e) => setCustomProduct((prev) => ({ ...prev, title: e.target.value }))}
+                />
+                <p className="form-help">Enter the name of your custom product.</p>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="btn btn-outline"
+                onClick={() => {
+                  setShowCustomProductModal(false)
+                  setCustomProduct({ title: "" })
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                disabled={!validateCustomProduct() || isAddingProduct}
+                onClick={addCustomProduct}
+              >
+                {isAddingProduct && <Loader2 className="icon spinner" />}
+                {isAddingProduct ? "Adding..." : "Add Product"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCrypticModal && (
+        <div className="modal-overlay" onClick={() => setShowCrypticModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Select Cryptic Platform</h3>
+              <button className="modal-close" onClick={() => setShowCrypticModal(false)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Platform</label>
+                <div className="cryptic-platform-grid">
+                  {crypticPlatforms.map((platform) => (
+                    <button
+                      key={platform.id}
+                      className={`cryptic-platform-btn ${selectedCrypticPlatform === platform.id ? "selected" : ""}`}
+                      onClick={() => setSelectedCrypticPlatform(platform.id)}
+                    >
+                      {platform.name}
+                    </button>
+                  ))}
+                </div>
+                <p className="form-help">
+                  Select the platform for Cryptic. This will create "cryptic-{selectedCrypticPlatform}".
+                </p>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="btn btn-outline"
+                onClick={() => {
+                  setShowCrypticModal(false)
+                  setSelectedCrypticPlatform("")
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                disabled={!selectedCrypticPlatform || isAddingProduct}
+                onClick={addCrypticProduct}
+              >
+                {isAddingProduct && <Loader2 className="icon spinner" />}
+                {isAddingProduct ? "Adding..." : "Add Cryptic"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Toast Container */}
       <div className="toast-container">
         {toasts.map((toast) => (
@@ -521,7 +861,6 @@ export default function PanelPage() {
   )
 }
 
-// Product Card Component
 function ProductCard({
   product,
   onRemove,
@@ -533,6 +872,7 @@ function ProductCard({
   setTempPaymentInput,
   setData,
   showToast,
+  platformInfo,
 }: {
   product: ProductWithDurations
   onRemove: (id: string, name: string) => void
@@ -544,6 +884,7 @@ function ProductCard({
   setTempPaymentInput: (payments: string[]) => void
   setData: React.Dispatch<React.SetStateAction<JsonBuilderData>>
   showToast: (title: string, description: string, type?: "success" | "error") => void
+  platformInfo: any
 }) {
   const [durationInput, setDurationInput] = useState("")
   const [priceInput, setPriceInput] = useState("")
@@ -591,7 +932,29 @@ function ProductCard({
               target.src = "/diverse-products-still-life.png"
             }}
           />
-          <h3>{product.name}</h3>
+          <div>
+            <h3>{product.name}</h3>
+            <div className="platform-badge">
+              <span className={`badge ${platformInfo[product.platform]?.color || "bg-gray-500"}`}>
+                {product.isCustom ? (
+                  <>
+                    <Plus className="w-4 h-4" /> Custom Product
+                  </>
+                ) : (
+                  <>
+                    <Image
+                      src={platformInfo[product.platform]?.logo || "/placeholder.svg"}
+                      alt={platformInfo[product.platform]?.name}
+                      width={16}
+                      height={16}
+                      className="inline mr-1"
+                    />
+                    {platformInfo[product.platform]?.name}
+                  </>
+                )}
+              </span>
+            </div>
+          </div>
         </div>
         <button className="btn btn-outline btn-icon" onClick={() => onRemove(product.id, product.name)}>
           <Trash2 className="icon" />
