@@ -1,17 +1,28 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { FortniteAffiliateService } from "../../../../lib/services/fortnite-affiliate-service"
+import { RustAffiliateService } from "../../../../lib/services/rust-affiliate-service"
+import { getAffiliateCode } from "../../../../lib/server-affiliate-utils"
 
 export async function GET(request: NextRequest) {
   try {
-    const affiliateService = FortniteAffiliateService.getInstance()
-    const allData = await affiliateService.getAllProductsData()
+    const { searchParams } = new URL(request.url)
+    const affiliateCode = getAffiliateCode(searchParams, request)
 
-    return NextResponse.json(allData, {
+    const rustService = RustAffiliateService.getInstance()
+    const resellers = await rustService.getRustResellersData(affiliateCode)
+
+    return NextResponse.json(resellers, {
       headers: {
-        "Cache-Control": "public, max-age=300", // 5 minutes
+        "Cache-Control": "public, s-maxage=180, stale-while-revalidate=300",
       },
     })
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch Fortnite reseller data" }, { status: 500 })
+  } catch (error: any) {
+    return NextResponse.json(
+      {
+        error: "Failed to fetch Rust resellers data",
+        details: error.message,
+        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+      },
+      { status: 500 },
+    )
   }
 }
