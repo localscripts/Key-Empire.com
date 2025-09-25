@@ -1,9 +1,5 @@
 import type { LocalAffiliateData, ProductResellers } from "../types/affiliate"
-import {
-  FORTNITE_RESELLER_SITES,
-  KNOWN_FORTNITE_CHEATS,
-  FORTNITE_PAYMENT_PATTERNS,
-} from "../data/fortnite-reseller-sites"
+import { FORTNITE_RESELLER_SITES } from "../data/fortnite-reseller-sites"
 import { processAffiliateUrl, DEFAULT_AFFILIATE_CODE, CACHE_DURATION } from "../config/global-affiliate-config"
 import fs from "fs/promises"
 import path from "path"
@@ -98,9 +94,6 @@ export class FortniteAffiliateService {
           if (productName === "pfp" || productName === "premium") continue
 
           const normalizedProductName = productName.toLowerCase()
-          if (!KNOWN_FORTNITE_CHEATS.includes(normalizedProductName)) {
-            continue
-          }
 
           if (!details || typeof details !== "object") continue
 
@@ -148,7 +141,17 @@ export class FortniteAffiliateService {
     const found: string[] = []
     const lowerHtml = html.toLowerCase()
 
-    for (const [method, patterns] of Object.entries(FORTNITE_PAYMENT_PATTERNS)) {
+    const commonPaymentPatterns = {
+      crypto: ["bitcoin", "btc", "ethereum", "eth", "crypto", "cryptocurrency"],
+      paypal: ["paypal", "pp"],
+      steam: ["steam wallet", "steam gift", "steam card", "steam"],
+      card: ["credit card", "debit card", "visa", "mastercard"],
+      cashapp: ["cashapp", "cash app"],
+      venmo: ["venmo"],
+      zelle: ["zelle"],
+    }
+
+    for (const [method, patterns] of Object.entries(commonPaymentPatterns)) {
       for (const pattern of patterns) {
         if (lowerHtml.includes(pattern.toLowerCase())) {
           found.push(method)
