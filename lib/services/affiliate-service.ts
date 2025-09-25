@@ -1,5 +1,5 @@
 import type { LocalAffiliateData, ProductResellers } from "../types/affiliate"
-import { RESELLER_SITES, KNOWN_EXPLOITS, PAYMENT_PATTERNS } from "../data/reseller-sites"
+import { RESELLER_SITES } from "../data/reseller-sites"
 import { processAffiliateUrl } from "../config/global-affiliate-config"
 import { DEFAULT_AFFILIATE_CODE, CACHE_DURATION } from "../config/global-affiliate-config"
 import fs from "fs/promises"
@@ -95,9 +95,6 @@ export class LocalAffiliateService {
           if (productName === "pfp" || productName === "premium") continue
 
           const normalizedProductName = productName.toLowerCase()
-          if (!KNOWN_EXPLOITS.includes(normalizedProductName)) {
-            continue
-          }
 
           if (!details || typeof details !== "object") continue
 
@@ -145,7 +142,24 @@ export class LocalAffiliateService {
     const found: string[] = []
     const lowerHtml = html.toLowerCase()
 
-    for (const [method, patterns] of Object.entries(PAYMENT_PATTERNS)) {
+    const commonPaymentPatterns = {
+      paypal: ["paypal", "pp"],
+      crypto: ["bitcoin", "btc", "ethereum", "eth", "crypto", "cryptocurrency", "ltc", "litecoin"],
+      cashapp: ["cashapp", "cash app", "$cashtag"],
+      venmo: ["venmo", "@venmo"],
+      zelle: ["zelle"],
+      stripe: ["stripe", "card", "credit card", "visa", "mastercard"],
+      skrill: ["skrill"],
+      perfectmoney: ["perfect money", "perfectmoney", "pm"],
+      webmoney: ["webmoney", "wm"],
+      paysafecard: ["paysafecard", "psc"],
+      binance: ["binance", "bnb"],
+      coinbase: ["coinbase"],
+      cashondelivery: ["cash on delivery", "cod"],
+      banktransfer: ["bank transfer", "wire transfer", "iban"],
+    }
+
+    for (const [method, patterns] of Object.entries(commonPaymentPatterns)) {
       for (const pattern of patterns) {
         if (lowerHtml.includes(pattern.toLowerCase())) {
           found.push(method)
