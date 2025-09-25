@@ -6,6 +6,10 @@ export const RESELLER_SITES: ResellerSite[] = [
     verified: false,
   },
   {
+    url: "https://raw.githubusercontent.com/100uzd/keyempirestuff/refs/heads/main/eternalproducts/roblox.json",
+    verified: false,
+  },
+  {
     url: "https://raw.githubusercontent.com/ilyaqqqq/keyempire/refs/heads/main/endpoint.json",
     verified: true,
   },
