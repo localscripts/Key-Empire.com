@@ -253,7 +253,8 @@ const SelectionsPage = () => {
               return // Exit early to prevent any counting or platform checking
             }
           } catch (e) {
-            // This is expected - standalone cryptic should not exist
+            // Expected - standalone cryptic should return 404
+            console.log("[v0] Standalone cryptic check failed as expected - proceeding with platform checks")
           }
 
           let overallLowestPrice = Number.POSITIVE_INFINITY
