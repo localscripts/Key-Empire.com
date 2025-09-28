@@ -5,7 +5,6 @@ import Navbar from "../navbar"
 import LoadingScreen from "../components/loading-screen"
 import Footer from "../components/footer"
 import HeroSection from "../components/hero-section"
-import QuickAccessSection from "../components/quick-access-section"
 import AffiliateProgramSection from "../components/affiliate-program-section"
 import FeaturesSection from "../components/features-section"
 import ScrollIndicator from "../components/scroll-indicator"
@@ -81,7 +80,6 @@ export default function HomePage() {
       <main className="px-4 py-8 mt-32 relative z-10">
         <div className="w-[95%] max-w-7xl mx-auto">
           <HeroSection onButtonClick={handleGetStartedClick} /> {/* Pass handler to HeroSection */}
-          <QuickAccessSection />
           <AffiliateProgramSection />
           <FeaturesSection />
         </div>
