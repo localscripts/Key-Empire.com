@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   creator: "Key-Empire",
   publisher: "Key-Empire",
 
-  // Theme color for mobile browsers and Discord
+  // Theme color for mobile browsers and Discord embeds
   themeColor: "#80E26F",
 
   // Open Graph tags for Discord, Facebook, etc.
@@ -35,6 +35,8 @@ export const metadata: Metadata = {
         type: "image/png",
       },
     ],
+    // 👇 Forces the Discord embed line color
+    color: "#80E26F",
   },
 
   // Twitter Card tags
