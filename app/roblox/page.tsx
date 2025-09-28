@@ -250,8 +250,7 @@ const SelectionsPage = () => {
               console.log(
                 "[v0] Detected standalone 'cryptic' endpoint - completely ignoring to prevent platform conflicts",
               )
-              // Don't add any data to newDynamicInfo for standalone cryptic
-              return // Exit early to prevent any counting
+              return // Exit early to prevent any counting or platform checking
             }
           } catch (e) {
             // This is expected - standalone cryptic should not exist
