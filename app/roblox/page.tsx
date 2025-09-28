@@ -270,6 +270,27 @@ const SelectionsPage = () => {
           })
 
           await Promise.allSettled(crypticPromises)
+
+          // Check if there's a standalone "cryptic" endpoint and exclude it
+          try {
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 2000)
+
+            const standaloneResponse = await fetch(`/api/products/cryptic?affiliate=${affiliateCode}`, {
+              signal: controller.signal,
+              headers: { "Cache-Control": "no-cache" },
+            })
+
+            clearTimeout(timeoutId)
+
+            // If standalone cryptic exists, we ignore it to prevent issues
+            if (standaloneResponse.ok) {
+              console.log("[v0] Detected standalone 'cryptic' endpoint - ignoring to prevent platform conflicts")
+            }
+          } catch (e) {
+            // This is expected - standalone cryptic should not exist
+          }
+
           const totalResellerCount = uniqueResellers.size
 
           if (totalResellerCount > 0) {
