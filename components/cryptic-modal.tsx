@@ -45,19 +45,19 @@ export default function CrypticModal({ isOpen, onClose, onPlatformSelect }: Cryp
   const allPlatforms = [
     {
       name: "Windows",
-      icon: "/placeholder.svg?height=48&width=48",
+      icon: "/images/windows-icon.svg",
     },
     {
       name: "macOS",
-      icon: "/placeholder.svg?height=48&width=48",
+      icon: "/images/macos-icon.svg",
     },
     {
       name: "iOS",
-      icon: "/placeholder.svg?height=48&width=48",
+      icon: "/images/ios-icon.svg",
     },
     {
       name: "Android",
-      icon: "/placeholder.svg?height=48&width=48",
+      icon: "/images/android-icon.svg",
     },
   ]
 
@@ -96,7 +96,19 @@ export default function CrypticModal({ isOpen, onClose, onPlatformSelect }: Cryp
           }}
         >
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Cryptic: Choose Your Platform</h2>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <Image
+                  src="/images/cryptic.png"
+                  alt="Cryptic"
+                  width={24}
+                  height={24}
+                  className="object-contain"
+                  draggable={false}
+                />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Cryptic: Choose Your Platform</h2>
+            </div>
 
             {/* Close Button */}
             <button
@@ -119,7 +131,7 @@ export default function CrypticModal({ isOpen, onClose, onPlatformSelect }: Cryp
           {allPlatforms.map((platform, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-4 mb-3 rounded-xl border transition-all duration-200 cursor-pointer group relative overflow-hidden border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md"
+              className="flex items-center justify-between p-4 mb-3 rounded-xl border transition-all duration-200 cursor-pointer group relative overflow-hidden border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md"
               style={{
                 opacity: isClosing ? 0 : 0,
                 transform: "translateX(-30px) scale(0.9)",
@@ -135,21 +147,25 @@ export default function CrypticModal({ isOpen, onClose, onPlatformSelect }: Cryp
               {/* Main Content */}
               <div className="flex items-center gap-4 flex-1">
                 {/* Icon */}
-                <div className="w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-200 overflow-hidden relative bg-gray-100 dark:bg-gray-700 group-hover:bg-green-100 dark:group-hover:bg-green-900/30">
+                <div className="w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-200 overflow-hidden relative bg-gray-100 dark:bg-gray-700 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30">
                   <Image
                     src={platform.icon || "/placeholder.svg"}
                     alt={platform.name}
-                    fill
-                    className="object-cover"
+                    width={32}
+                    height={32}
+                    className="object-contain"
                     draggable={false}
                   />
                 </div>
 
                 {/* Name */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg transition-colors text-gray-900 dark:text-gray-100 group-hover:text-green-700 dark:group-hover:text-green-300">
+                  <h3 className="font-semibold text-lg transition-colors text-gray-900 dark:text-gray-100 group-hover:text-purple-700 dark:group-hover:text-purple-300">
                     {platform.name}
                   </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400">
+                    Cryptic for {platform.name}
+                  </p>
                 </div>
               </div>
             </div>
