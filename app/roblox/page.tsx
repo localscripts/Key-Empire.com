@@ -250,10 +250,9 @@ const SelectionsPage = () => {
               console.log(
                 "[v0] Detected standalone 'cryptic' endpoint - completely ignoring to prevent platform conflicts",
               )
-              return // Exit early to prevent any counting or platform checking
+              return // Exit early - don't add cryptic to products at all
             }
           } catch (e) {
-            // Expected - standalone cryptic should return 404
             console.log("[v0] Standalone cryptic check failed as expected - proceeding with platform checks")
           }
 
