@@ -11,6 +11,17 @@ export async function GET(request: NextRequest, { params }: { params: { productT
 
     const affiliateService = LocalAffiliateService.getInstance()
 
+    if (productTitle === "cryptic") {
+      console.log("[v0] Blocking standalone cryptic request")
+      return new NextResponse(
+        JSON.stringify({ error: "Standalone cryptic products are not supported. Use cryptic-{platform} instead." }),
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        },
+      )
+    }
+
     // Handle special case for Cryptic platform-specific requests
     if (productTitle.startsWith("cryptic-")) {
       const platform = productTitle.replace("cryptic-", "")
