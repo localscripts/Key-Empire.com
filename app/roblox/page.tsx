@@ -283,9 +283,12 @@ const SelectionsPage = () => {
 
             clearTimeout(timeoutId)
 
-            // If standalone cryptic exists, we ignore it to prevent issues
             if (standaloneResponse.ok) {
-              console.log("[v0] Detected standalone 'cryptic' endpoint - ignoring to prevent platform conflicts")
+              console.log(
+                "[v0] Detected standalone 'cryptic' endpoint - completely ignoring to prevent platform conflicts",
+              )
+              // Don't add any data to newDynamicInfo for standalone cryptic
+              return // Exit early to prevent any counting
             }
           } catch (e) {
             // This is expected - standalone cryptic should not exist
