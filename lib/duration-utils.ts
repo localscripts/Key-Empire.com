@@ -4,167 +4,149 @@ export interface DurationOption {
   sortOrder: number
 }
 
-const parseDurationFromKey = (durationKey: string): { days: number; isLifetime: boolean; originalKey: string } => {
+export const parseDurationFromKey = (durationKey: string): { label: string; sortOrder: number } => {
   const normalizedKey = durationKey.toLowerCase().trim()
-  const originalKey = durationKey
 
   // Handle lifetime variations
-  if (["lifetime", "permanent", "forever", "life", "perm"].includes(normalizedKey)) {
-    return { days: Number.POSITIVE_INFINITY, isLifetime: true, originalKey }
+  if (["lifetime", "permanent", "forever", "perm"].includes(normalizedKey)) {
+    return { label: "Lifetime", sortOrder: 10000 }
   }
 
-  // Handle numeric-only keys (assume days)
-  const numericMatch = normalizedKey.match(/^(\d+)$/)
+  // Parse numeric values with optional units
+  const numericMatch = normalizedKey.match(/^(\d+)\s*(day|days|d|week|weeks|w|month|months|m|year|years|y)?s?$/i)
   if (numericMatch) {
-    return { days: Number.parseInt(numericMatch[1]), isLifetime: false, originalKey }
+    const value = Number.parseInt(numericMatch[1])
+    const unit = numericMatch[2]?.toLowerCase() || "day"
+
+    let daysEquivalent: number
+    let label: string
+
+    switch (unit.charAt(0)) {
+      case "w": // weeks
+        daysEquivalent = value * 7
+        label = value === 1 ? "1 Week" : `${value} Weeks`
+        break
+      case "m": // months
+        daysEquivalent = value * 30
+        label = value === 1 ? "1 Month" : `${value} Months`
+        break
+      case "y": // years
+        daysEquivalent = value * 365
+        label = value === 1 ? "1 Year" : `${value} Years`
+        break
+      default: // days
+        daysEquivalent = value
+        if (value >= 365) {
+          const years = Math.floor(value / 365)
+          const remainingDays = value % 365
+          if (remainingDays === 0) {
+            label = years === 1 ? "1 Year" : `${years} Years`
+          } else if (remainingDays <= 30) {
+            label = years === 1 ? `1 Year ${remainingDays} Days` : `${years} Years ${remainingDays} Days`
+          } else {
+            label = `${value} Days`
+          }
+        } else if (value >= 30) {
+          const months = Math.floor(value / 30)
+          const remainingDays = value % 30
+          if (remainingDays === 0) {
+            label = months === 1 ? "1 Month" : `${months} Months`
+          } else if (remainingDays <= 7) {
+            label = months === 1 ? `1 Month ${remainingDays} Days` : `${months} Months ${remainingDays} Days`
+          } else {
+            label = `${value} Days`
+          }
+        } else if (value >= 7) {
+          const weeks = Math.floor(value / 7)
+          const remainingDays = value % 7
+          if (remainingDays === 0) {
+            label = weeks === 1 ? "1 Week" : `${weeks} Weeks`
+          } else {
+            label = `${value} Days`
+          }
+        } else {
+          label = value === 1 ? "1 Day" : `${value} Days`
+        }
+        break
+    }
+
+    return { label, sortOrder: daysEquivalent }
   }
 
-  // Handle various duration formats with regex patterns
-  const patterns = [
-    // Days: "1day", "3days", "7-days", "30_days"
-    { regex: /(\d+)[-_\s]*days?/i, multiplier: 1 },
-    // Weeks: "1week", "2weeks", "1-week", "4_weeks"
-    { regex: /(\d+)[-_\s]*weeks?/i, multiplier: 7 },
-    // Months: "1month", "3months", "6-months", "12_months"
-    { regex: /(\d+)[-_\s]*months?/i, multiplier: 30 },
-    // Years: "1year", "2years", "1-year", "5_years"
-    { regex: /(\d+)[-_\s]*years?/i, multiplier: 365 },
-    // Special formats: "1m" (month), "1y" (year), "1w" (week), "1d" (day)
-    { regex: /(\d+)d$/i, multiplier: 1 },
-    { regex: /(\d+)w$/i, multiplier: 7 },
-    { regex: /(\d+)m$/i, multiplier: 30 },
-    { regex: /(\d+)y$/i, multiplier: 365 },
-  ]
+  const textMappings: Record<string, { label: string; sortOrder: number }> = {
+    daily: { label: "1 Day", sortOrder: 1 },
+    weekly: { label: "1 Week", sortOrder: 7 },
+    monthly: { label: "1 Month", sortOrder: 30 },
+    yearly: { label: "1 Year", sortOrder: 365 },
+    annual: { label: "1 Year", sortOrder: 365 },
+    trial: { label: "Trial", sortOrder: 0.5 },
+    demo: { label: "Demo", sortOrder: 0.1 },
+    normal: { label: "Normal", sortOrder: 100 },
+    premium: { label: "Premium", sortOrder: 200 },
+    basic: { label: "Basic", sortOrder: 50 },
+    standard: { label: "Standard", sortOrder: 150 },
+    pro: { label: "Pro", sortOrder: 300 },
+    enterprise: { label: "Enterprise", sortOrder: 500 },
+    starter: { label: "Starter", sortOrder: 25 },
+    advanced: { label: "Advanced", sortOrder: 250 },
+    ultimate: { label: "Ultimate", sortOrder: 400 },
+    subscription: { label: "Subscription", sortOrder: 1000 },
+    recurring: { label: "Recurring", sortOrder: 1100 },
+    onetime: { label: "One-time", sortOrder: 0.8 },
+    "one-time": { label: "One-time", sortOrder: 0.8 },
+    temporary: { label: "Temporary", sortOrder: 10 },
+    extended: { label: "Extended", sortOrder: 600 },
+  }
 
-  for (const pattern of patterns) {
-    const match = normalizedKey.match(pattern.regex)
-    if (match) {
-      const number = Number.parseInt(match[1])
-      return { days: number * pattern.multiplier, isLifetime: false, originalKey }
+  if (textMappings[normalizedKey]) {
+    return textMappings[normalizedKey]
+  }
+
+  // Fallback for unknown formats - try to extract any numbers
+  const fallbackMatch = normalizedKey.match(/(\d+)/)
+  if (fallbackMatch) {
+    const value = Number.parseInt(fallbackMatch[1])
+    return {
+      label: `${value} Days`,
+      sortOrder: value,
     }
   }
 
-  // If no pattern matches, try to extract any number and assume it's days
-  const anyNumberMatch = normalizedKey.match(/(\d+)/)
-  if (anyNumberMatch) {
-    return { days: Number.parseInt(anyNumberMatch[1]), isLifetime: false, originalKey }
-  }
-
-  // Default fallback - treat as unknown duration
-  return { days: 0, isLifetime: false, originalKey }
-}
-
-const generateDurationLabel = (days: number, isLifetime: boolean): string => {
-  if (isLifetime) {
-    return "Lifetime"
-  }
-
-  if (days === 0) {
-    return "Unknown"
-  }
-
-  // Handle exact matches for common durations
-  const exactMatches: Record<number, string> = {
-    1: "1 Day",
-    2: "2 Days",
-    3: "3 Days",
-    4: "4 Days",
-    5: "5 Days",
-    6: "6 Days",
-    7: "1 Week",
-    14: "2 Weeks",
-    21: "3 Weeks",
-    28: "4 Weeks",
-    30: "1 Month",
-    60: "2 Months",
-    90: "3 Months",
-    120: "4 Months",
-    150: "5 Months",
-    180: "6 Months",
-    365: "1 Year",
-    730: "2 Years",
-    1095: "3 Years",
-  }
-
-  if (exactMatches[days]) {
-    return exactMatches[days]
-  }
-
-  // Smart conversion for other durations
-  if (days >= 365) {
-    const years = Math.floor(days / 365)
-    const remainingDays = days % 365
-
-    if (remainingDays === 0) {
-      return years === 1 ? "1 Year" : `${years} Years`
-    } else if (remainingDays <= 31) {
-      // Close to exact years, show as years + days
-      return `${years} Year${years > 1 ? "s" : ""} + ${remainingDays} Day${remainingDays > 1 ? "s" : ""}`
-    } else {
-      // Show total days for complex durations
-      return `${days} Days`
-    }
-  } else if (days >= 30) {
-    const months = Math.floor(days / 30)
-    const remainingDays = days % 30
-
-    if (remainingDays === 0) {
-      return months === 1 ? "1 Month" : `${months} Months`
-    } else if (remainingDays <= 7) {
-      // Close to exact months, show as months + days
-      return `${months} Month${months > 1 ? "s" : ""} + ${remainingDays} Day${remainingDays > 1 ? "s" : ""}`
-    } else {
-      // Show total days for complex durations
-      return `${days} Days`
-    }
-  } else if (days >= 7) {
-    const weeks = Math.floor(days / 7)
-    const remainingDays = days % 7
-
-    if (remainingDays === 0) {
-      return weeks === 1 ? "1 Week" : `${weeks} Weeks`
-    } else {
-      // Show as weeks + days or just days if close
-      if (weeks === 1 && remainingDays <= 3) {
-        return `1 Week + ${remainingDays} Day${remainingDays > 1 ? "s" : ""}`
-      } else {
-        return `${days} Days`
-      }
-    }
-  } else {
-    // Less than a week, show as days
-    return days === 1 ? "1 Day" : `${days} Days`
+  return {
+    label: normalizedKey.charAt(0).toUpperCase() + normalizedKey.slice(1),
+    sortOrder: 9999, // Custom text gets high sort order to appear at end
   }
 }
 
-const calculateSortOrder = (days: number, isLifetime: boolean): number => {
-  if (isLifetime) {
-    return 10000 // Lifetime always comes last
-  }
-
-  if (days === 0) {
-    return 9999 // Unknown durations near the end
-  }
-
-  // Use days as sort order directly for precise sorting
-  return days
-}
-
-// Generate duration key from any duration format
 export const generateDurationKey = (durationKey: string): string => {
-  const parsed = parseDurationFromKey(durationKey)
+  const normalizedKey = durationKey.toLowerCase().trim()
 
-  if (parsed.isLifetime) {
+  // Handle lifetime variations
+  if (["lifetime", "permanent", "forever", "perm"].includes(normalizedKey)) {
     return "lifetime"
   }
 
-  if (parsed.days === 0) {
-    // Keep original key for unknown formats
-    return durationKey.toLowerCase()
+  // Parse and normalize numeric durations
+  const numericMatch = normalizedKey.match(/^(\d+)\s*(day|days|d|week|weeks|w|month|months|m|year|years|y)?s?$/i)
+  if (numericMatch) {
+    const value = Number.parseInt(numericMatch[1])
+    const unit = numericMatch[2]?.toLowerCase() || "day"
+
+    // Convert everything to days for consistent keys
+    switch (unit.charAt(0)) {
+      case "w": // weeks
+        return (value * 7).toString()
+      case "m": // months
+        return (value * 30).toString()
+      case "y": // years
+        return (value * 365).toString()
+      default: // days
+        return value.toString()
+    }
   }
 
-  // Use days as the normalized key
-  return parsed.days.toString()
+  // Return as-is for text-based keys
+  return normalizedKey
 }
 
 export const getDynamicDurationOptions = (resellersData: any[]): DurationOption[] => {
@@ -178,37 +160,30 @@ export const getDynamicDurationOptions = (resellersData: any[]): DurationOption[
   resellersData.forEach((reseller) => {
     if (reseller.durations && typeof reseller.durations === "object") {
       Object.keys(reseller.durations).forEach((durationKey) => {
-        if (reseller.durations[durationKey]) {
-          availableDurations.add(durationKey)
+        if (reseller.durations[durationKey] && reseller.durations[durationKey].price) {
+          const normalizedKey = generateDurationKey(durationKey)
+          availableDurations.add(normalizedKey)
         }
       })
     }
   })
 
-  // Convert to duration options with automatic parsing and labeling
+  // Convert to duration options with automatic parsing
   const durationOptions: DurationOption[] = []
 
   availableDurations.forEach((durationKey) => {
     const parsed = parseDurationFromKey(durationKey)
-    const label = generateDurationLabel(parsed.days, parsed.isLifetime)
-    const sortOrder = calculateSortOrder(parsed.days, parsed.isLifetime)
-    const normalizedKey = generateDurationKey(durationKey)
-
-    // Avoid duplicates (same normalized key)
-    if (!durationOptions.find((option) => option.key === normalizedKey)) {
-      durationOptions.push({
-        key: normalizedKey,
-        label,
-        sortOrder,
-      })
-    }
+    durationOptions.push({
+      key: durationKey,
+      label: parsed.label,
+      sortOrder: parsed.sortOrder,
+    })
   })
 
-  // Sort by sort order (days ascending, lifetime last)
+  // Sort by sort order (days equivalent)
   return durationOptions.sort((a, b) => a.sortOrder - b.sortOrder)
 }
 
-// Transform reseller data to use consistent duration keys
 export const transformResellerDurations = (resellerData: any): any => {
   if (!resellerData.durations || typeof resellerData.durations !== "object") {
     return resellerData
@@ -225,4 +200,59 @@ export const transformResellerDurations = (resellerData: any): any => {
     ...resellerData,
     durations: transformedDurations,
   }
+}
+
+export const getDurationLabel = (durationKey: string): string => {
+  return parseDurationFromKey(durationKey).label
+}
+
+export const sortDurationKeys = (keys: string[]): string[] => {
+  return keys.sort((a, b) => {
+    const aOrder = parseDurationFromKey(a).sortOrder
+    const bOrder = parseDurationFromKey(b).sortOrder
+    return aOrder - bOrder
+  })
+}
+
+export const parseDurationInput = (input: string): string => {
+  const normalizedInput = input.toLowerCase().trim()
+
+  // Handle lifetime variations first
+  if (["lifetime", "permanent", "forever", "perm"].includes(normalizedInput)) {
+    return "lifetime"
+  }
+
+  // Try numeric parsing with units (preserves existing days regex functionality)
+  const dayMatch = normalizedInput.match(/(\d+)\s*(days?)/)
+  if (dayMatch) {
+    return dayMatch[1]
+  }
+
+  const monthMatch = normalizedInput.match(/(\d+)\s*(months?)/)
+  if (monthMatch) {
+    return (Number.parseInt(monthMatch[1]) * 30).toString()
+  }
+
+  const yearMatch = normalizedInput.match(/(\d+)\s*(years?)/)
+  if (yearMatch) {
+    return (Number.parseInt(yearMatch[1]) * 365).toString()
+  }
+
+  const weekMatch = normalizedInput.match(/(\d+)\s*(weeks?)/)
+  if (weekMatch) {
+    return (Number.parseInt(weekMatch[1]) * 7).toString()
+  }
+
+  // Handle pure numbers (existing functionality)
+  const numberMatch = normalizedInput.match(/^(\d+)$/)
+  if (numberMatch) {
+    return numberMatch[1]
+  }
+
+  // This allows "normal", "premium", etc. to be stored directly
+  if (normalizedInput.length > 0) {
+    return normalizedInput
+  }
+
+  return ""
 }
