@@ -12,9 +12,7 @@ export async function GET(request: NextRequest, { params }: { params: { productT
     const affiliateService = LocalAffiliateService.getInstance()
 
     if (productTitle === "cryptic") {
-      console.log("[v0] Blocking standalone cryptic request")
       return new NextResponse(
-        JSON.stringify({ error: "Standalone cryptic products are not supported. Use cryptic-{platform} instead." }),
         {
           status: 404,
           headers: { "Content-Type": "application/json" },
@@ -22,11 +20,31 @@ export async function GET(request: NextRequest, { params }: { params: { productT
       )
     }
 
-    // Handle special case for Cryptic platform-specific requests
     if (productTitle.startsWith("cryptic-")) {
       const platform = productTitle.replace("cryptic-", "")
+      const validPlatforms = ["windows", "macos", "ios", "android"]
 
-      const crypticData = await affiliateService.getProductResellers("cryptic", affiliateCode)
+      if (!validPlatforms.includes(platform)) {
+        
+        return new NextResponse(
+          JSON.stringify({
+            error: `Invalid cryptic platform: ${platform}. Valid platforms: ${validPlatforms.join(", ")}`,
+          }),
+          {
+            status: 404,
+            headers: { "Content-Type": "application/json" },
+          },
+        )
+      }
+
+      const crypticData = await affiliateService.getProductResellers(productTitle, affiliateCode)
+
+      if (Object.keys(crypticData).length === 0) {
+        return new NextResponse(JSON.stringify({ error: `No resellers found for ${productTitle}` }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        })
+      }
 
       return NextResponse.json(crypticData, {
         headers: {
