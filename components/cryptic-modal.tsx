@@ -45,19 +45,19 @@ export default function CrypticModal({ isOpen, onClose, onPlatformSelect }: Cryp
   const allPlatforms = [
     {
       name: "Windows",
-      icon: "/images/windows-icon.svg",
+      icon: "/images/cryptic.png",
     },
     {
       name: "macOS",
-      icon: "/images/macos-icon.svg",
+      icon: "/images/cryptic.png",
     },
     {
       name: "iOS",
-      icon: "/images/ios-icon.svg",
+      icon: "/images/cryptic.png",
     },
     {
       name: "Android",
-      icon: "/images/android-icon.svg",
+      icon: "/images/cryptic.png",
     },
   ]
 
