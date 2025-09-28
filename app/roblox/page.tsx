@@ -247,13 +247,10 @@ const SelectionsPage = () => {
             clearTimeout(timeoutId)
 
             if (standaloneResponse.ok) {
-              console.log(
-                "[v0] Detected standalone 'cryptic' endpoint - completely ignoring to prevent platform conflicts",
-              )
               return // Exit early - don't add cryptic to products at all
             }
           } catch (e) {
-            console.log("[v0] Standalone cryptic check failed as expected - proceeding with platform checks")
+            
           }
 
           let overallLowestPrice = Number.POSITIVE_INFINITY
