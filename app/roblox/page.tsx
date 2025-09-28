@@ -235,43 +235,6 @@ const SelectionsPage = () => {
 
       const individualPromises = potentialProducts.map(async (product) => {
         if (product.title === "Cryptic") {
-          let overallLowestPrice = Number.POSITIVE_INFINITY
-          const uniqueResellers = new Set<string>()
-
-          const crypticPromises = crypticPlatforms.map(async (platform) => {
-            try {
-              const controller = new AbortController()
-              const timeoutId = setTimeout(() => controller.abort(), 4000)
-
-              const response = await fetch(`/api/products/cryptic-${platform}?affiliate=${affiliateCode}`, {
-                signal: controller.signal,
-                headers: { "Cache-Control": "no-cache" },
-              })
-
-              clearTimeout(timeoutId)
-
-              if (!response.ok) {
-                return
-              }
-
-              const data: ApiProductResellersResponse = await response.json()
-
-              Object.entries(data).forEach(([resellerKey, resellerData]) => {
-                const resellerName = resellerData.name || resellerKey.split("_")[0] || "Unknown"
-                uniqueResellers.add(resellerName)
-                Object.values(resellerData.durations).forEach((d) => {
-                  const price = parsePrice(d.price)
-                  if (!isNaN(price) && price < overallLowestPrice) {
-                    overallLowestPrice = price
-                  }
-                })
-              })
-            } catch (e) {}
-          })
-
-          await Promise.allSettled(crypticPromises)
-
-          // Check if there's a standalone "cryptic" endpoint and exclude it
           try {
             const controller = new AbortController()
             const timeoutId = setTimeout(() => controller.abort(), 2000)
@@ -294,9 +257,49 @@ const SelectionsPage = () => {
             // This is expected - standalone cryptic should not exist
           }
 
+          let overallLowestPrice = Number.POSITIVE_INFINITY
+          const uniqueResellers = new Set<string>()
+          let hasValidPlatformData = false
+
+          const crypticPromises = crypticPlatforms.map(async (platform) => {
+            try {
+              const controller = new AbortController()
+              const timeoutId = setTimeout(() => controller.abort(), 4000)
+
+              const response = await fetch(`/api/products/cryptic-${platform}?affiliate=${affiliateCode}`, {
+                signal: controller.signal,
+                headers: { "Cache-Control": "no-cache" },
+              })
+
+              clearTimeout(timeoutId)
+
+              if (!response.ok) {
+                return
+              }
+
+              const data: ApiProductResellersResponse = await response.json()
+
+              if (Object.keys(data).length > 0) {
+                hasValidPlatformData = true
+                Object.entries(data).forEach(([resellerKey, resellerData]) => {
+                  const resellerName = resellerData.name || resellerKey.split("_")[0] || "Unknown"
+                  uniqueResellers.add(resellerName)
+                  Object.values(resellerData.durations).forEach((d) => {
+                    const price = parsePrice(d.price)
+                    if (!isNaN(price) && price < overallLowestPrice) {
+                      overallLowestPrice = price
+                    }
+                  })
+                })
+              }
+            } catch (e) {}
+          })
+
+          await Promise.allSettled(crypticPromises)
+
           const totalResellerCount = uniqueResellers.size
 
-          if (totalResellerCount > 0) {
+          if (hasValidPlatformData && totalResellerCount > 0) {
             let displayCount: string
             if (totalResellerCount >= 99) {
               displayCount = "99+"
